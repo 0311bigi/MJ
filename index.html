@@ -573,7 +573,16 @@
                 const current = parseInt(row.querySelector('.chip-input').value) || 0;
                 const score = current - effectiveBase; 
                 nextBaseChips[name] = current; 
-                payload.push({ name: name, score: score, continuance: 0, penalty: 0, foul: 0, bigCount: 0, bigNames: "" });
+                payload.push({ 
+                    name: name, 
+                    score: score, 
+                    continuance: 0, 
+                    penalty: 0, 
+                    foul: 0, 
+                    bigCount: 0, 
+                    bigNames: "",
+                    loan: topUp  // <--- 加上這行！這就是傳給 J 欄的資料
+                });
             });
             const currentFund = parseInt(document.getElementById('current-fund').value) || 0;
             const fundDiff = currentFund - gameState.baseFund;
@@ -619,4 +628,5 @@
         init();
     </script>
 </body>
+
 </html>
