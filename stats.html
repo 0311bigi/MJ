@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🧧 看診戰情室</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js 已經移除，改用原生 JS 寫日曆 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🀄</text></svg>">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Zen Maru Gothic"', 'sans-serif'] },
+                    colors: { 
+                        cute: { 
+                            red: '#ff6b6b',       // 糖果紅
+                            dark: '#c92a2a',      // 深紅字
+                            yellow: '#ffd43b',    // 亮奶黃
+                            cream: '#fff0f3',     // 粉白底
+                            bg: '#ff8787',        // 背景紅
+                            green: '#51cf66'      // 勝者綠
+                        } 
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #ff8787; 
+            background-image: radial-gradient(#ffffff 20%, transparent 20%), radial-gradient(#ffffff 20%, transparent 20%);
+            background-color: #ff8787;
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+            background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
+            color: #495057;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .card { 
+            background: #ffffff; 
+            border-radius: 2rem; 
+            border: 4px solid #fff; 
+            box-shadow: 0 6px 0 rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .tab-btn { transition: all 0.2s; border-bottom: 4px solid transparent; }
+        .tab-btn.active { background-color: #ff6b6b; color: white; transform: translateY(-2px); border-bottom-color: #c92a2a; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .modal-enter { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* 新增動畫效果 */
+        @keyframes float { 
+            0%, 100% { transform: translateY(0) rotate(0deg); } 
+            50% { transform: translateY(-20px) rotate(5deg); } 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        
+        /* 背景漂浮元素 */
+        .bg-floating-icon { 
+            position: fixed; 
+            z-index: 0; 
+            opacity: 0.15; 
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            pointer-events: none; 
+            animation: float 8s ease-in-out infinite; 
+            filter: grayscale(0.5);
+        }
+
+        /* 日曆樣式 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-day { 
+            aspect-ratio: 1; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 0.75rem; 
+            font-size: 0.8rem; 
+            font-weight: 900;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .calendar-day:hover { background-color: #fff0f3; transform: scale(1.05); z-index: 10; }
+        .calendar-day.has-game { 
+            background-color: #fff9db; 
+            color: #e67700; 
+            border-color: #ffd43b;
+        }
+        .calendar-day.selected { 
+            background-color: #ff6b6b !important; 
+            color: white !important; 
+            box-shadow: 0 4px 0 #c92a2a;
+            transform: translateY(-2px);
+            border-color: transparent;
+            z-index: 20;
+        }
+        .calendar-day.empty { pointer-events: none; background: transparent; }
+    </style>
+</head>
+<body class="pb-24 pt-4 px-4 min-h-screen">
+
+    <!-- 動態背景裝飾 -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="bg-floating-icon text-6xl" style="top: 10%; left: -5%; animation-delay: 0s;">🀄</div>
+        <div class="bg-floating-icon text-5xl" style="top: 60%; right: -5%; animation-delay: 2s; animation-duration: 10s;">🎲</div>
+        <div class="bg-floating-icon text-4xl" style="bottom: 10%; left: 20%; animation-delay: 4s; font-size: 3rem;">🧧</div>
+        <div class="bg-floating-icon text-7xl" style="top: 30%; right: 20%; animation-delay: 1s; animation-duration: 12s;">🀅</div>
+        <div class="bg-floating-icon text-4xl" style="top: 5%; right: 30%; animation-delay: 3s;">☁️</div>
+    </div>
+
+    <!-- 讀取遮罩 (可愛版) -->
+    <div id="loading-overlay" class="fixed inset-0 z-[60] bg-cute-bg/95 backdrop-blur-md flex flex-col items-center justify-center hidden">
+        <div class="flex gap-3 mb-6">
+            <div class="w-16 h-20 bg-white rounded-2xl border-b-4 border-gray-200 shadow-xl flex items-center justify-center text-4xl animate-bounce" style="animation-delay: 0s;">🐱</div>
+            <div class="w-16 h-20 bg-white rounded-2xl border-b-4 border-gray-200 shadow-xl flex items-center justify-center text-4xl animate-bounce" style="animation-delay: 0.1s;">🀄</div>
+            <div class="w-16 h-20 bg-white rounded-2xl border-b-4 border-gray-200 shadow-xl flex items-center justify-center text-4xl animate-bounce" style="animation-delay: 0.2s;">🧧</div>
+        </div>
+        <h3 class="text-3xl font-black text-white tracking-widest drop-shadow-md">資料同步中</h3>
+    </div>
+
+    <!-- 頂部標題 -->
+    <div class="flex justify-between items-center mb-6 text-white relative z-10">
+        <div>
+            <h1 class="text-3xl font-black drop-shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-cute-yellow"></i> 雀王戰情室
+            </h1>
+            <p class="text-xs font-bold opacity-80 mt-1 pl-1" id="last-update">資料讀取中...</p>
+        </div>
+        <a href="index.html" class="bg-white/20 backdrop-blur-md border-2 border-white/50 px-4 py-2 rounded-2xl text-sm font-black hover:bg-white/30 transition shadow-sm hover:scale-105 active:scale-95">
+            <i class="fa-solid fa-house mr-1"></i> 回大廳
+        </a>
+    </div>
+
+    <div class="max-w-md mx-auto relative z-20">
+        
+        <!-- 分頁按鈕 -->
+        <div class="bg-white/20 p-1.5 rounded-2xl flex mb-6 shadow-inner backdrop-blur-sm border-2 border-white/30">
+            <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn active flex-1 py-2 rounded-xl text-xs font-black transition whitespace-nowrap px-2">戰況日曆</button>
+            <button onclick="switchTab('ranking')" id="btn-ranking" class="tab-btn flex-1 py-2 rounded-xl text-xs font-black text-white/80 hover:bg-white/10 transition whitespace-nowrap px-2">風雲榜</button>
+            <button onclick="switchTab('achievement')" id="btn-achievement" class="tab-btn flex-1 py-2 rounded-xl text-xs font-black text-white/80 hover:bg-white/10 transition whitespace-nowrap px-2">成就</button>
+            <button onclick="switchTab('guestbook')" id="btn-guestbook" class="tab-btn flex-1 py-2 rounded-xl text-xs font-black text-white/80 hover:bg-white/10 transition whitespace-nowrap px-2">留言</button>
+        </div>
+
+        <!-- 1. 總覽 Tab (現在改為日曆版) -->
+        <div id="tab-overview" class="space-y-4 animate-fade-in">
+            
+            <!-- 今日雀運卡 (新增) -->
+            <div id="fortune-card" class="card p-4 bg-gradient-to-r from-cute-red to-orange-400 text-white relative overflow-hidden border-none shadow-lg transform transition hover:scale-[1.02]">
+                <div class="absolute -right-6 -top-6 text-7xl opacity-20 rotate-12 animate-pulse">✨</div>
+                <div class="relative z-10">
+                    <h3 class="font-black text-xs mb-2 opacity-90 flex items-center gap-1"><i class="fa-solid fa-star text-yellow-300"></i> 今日雀運</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="text-4xl bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-inner" id="fortune-icon">🎲</div>
+                        <div>
+                            <div class="font-black text-2xl tracking-wide drop-shadow-sm" id="fortune-text">載入中...</div>
+                            <div class="text-xs font-bold opacity-90 mt-1" id="fortune-desc">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 數據概況 -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="card p-4 flex flex-col items-center justify-center relative overflow-hidden hover:scale-[1.02] transition">
+                    <div class="absolute -right-4 -bottom-4 text-7xl text-gray-50 rotate-12 pointer-events-none z-0">🀄</div>
+                    <span class="relative z-10 text-gray-400 text-[10px] font-black uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-lg mb-1">總戰局數</span>
+                    <span class="relative z-10 text-3xl font-black text-cute-red" id="stat-total-games">0</span>
+                </div>
+                <div onclick="openFundModal()" class="card p-4 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:border-cute-yellow transition group border-2 border-transparent hover:scale-[1.02]">
+                    <div class="absolute -right-4 -bottom-4 text-7xl text-yellow-50 rotate-12 pointer-events-none z-0">💰</div>
+                    <span class="relative z-10 text-gray-400 text-[10px] font-black uppercase tracking-wider bg-yellow-50 px-2 py-0.5 rounded-lg mb-1 flex items-center gap-1">公基金 <i class="fa-solid fa-pen text-[10px]"></i></span>
+                    <span class="relative z-10 text-3xl font-black text-cute-yellow" id="stat-total-fund">0</span>
+                    <div id="fund-base-display" class="relative z-10 text-[9px] font-bold text-gray-400 mt-1 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap max-w-full overflow-hidden text-ellipsis">...</div>
+                </div>
+            </div>
+
+            <!-- 日曆主體 -->
+            <div class="card p-5 hover:shadow-lg transition duration-300">
+                <!-- 日曆控制器 -->
+                <div class="flex justify-between items-center mb-4">
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:bg-cute-red hover:text-white transition flex items-center justify-center font-bold active:scale-90">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h3 class="font-black text-lg text-cute-dark" id="calendar-title">2023年 10月</h3>
+                    <button onclick="changeMonth(1)" class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:bg-cute-red hover:text-white transition flex items-center justify-center font-bold active:scale-90">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <!-- 星期標題 -->
+                <div class="grid grid-cols-7 gap-1 mb-2 text-center">
+                    <div class="text-xs font-black text-cute-red">日</div>
+                    <div class="text-xs font-black text-gray-400">一</div>
+                    <div class="text-xs font-black text-gray-400">二</div>
+                    <div class="text-xs font-black text-gray-400">三</div>
+                    <div class="text-xs font-black text-gray-400">四</div>
+                    <div class="text-xs font-black text-gray-400">五</div>
+                    <div class="text-xs font-black text-cute-red">六</div>
+                </div>
+
+                <!-- 日期格子 -->
+                <div id="calendar-body" class="calendar-grid mb-4">
+                    <!-- JS 生成 -->
+                </div>
+
+                <!-- 當日戰況詳情區 -->
+                <div id="day-detail-panel" class="bg-cute-cream rounded-xl p-4 border-2 border-dashed border-cute-red/30 hidden animate-fade-in">
+                    <div class="flex justify-between items-start mb-2 border-b border-black/5 pb-2">
+                        <h4 class="font-black text-cute-dark flex items-center gap-2">
+                            <span id="detail-date" class="text-sm">10/24 (五)</span>
+                            <span class="bg-cute-red text-white text-[10px] px-1.5 rounded-md shadow-sm">本日有局</span>
+                        </h4>
+                        <span id="detail-total" class="font-black text-sm text-gray-500">共 4 局</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mb-2">
+                         <span class="text-xs font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">🏆 大贏家</span>
+                         <span id="detail-winner" class="text-sm font-black text-cute-dark">載入中...</span>
+                    </div>
+
+                    <div id="detail-hands" class="flex flex-wrap gap-1 mt-2 mb-3">
+                        <!-- 大牌列表 -->
+                    </div>
+
+                    <!-- 詳細對戰紀錄 (新增) -->
+                    <div id="detail-rounds-list" class="space-y-2 mt-2 border-t border-dashed border-red-200 pt-2">
+                        <!-- JS 動態生成 -->
+                    </div>
+                </div>
+                
+                <div id="day-empty-panel" class="bg-gray-50 rounded-xl p-6 text-center border-2 border-dashed border-gray-200">
+                    <div class="text-3xl grayscale opacity-30 mb-2">🀄</div>
+                    <p class="text-xs font-bold text-gray-400">這天風平浪靜，沒有戰況</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 風雲榜 Tab -->
+        <div id="tab-ranking" class="space-y-4 hidden">
+            <!-- 四大天王 -->
+            <div class="grid grid-cols-2 gap-3 animate-fade-in">
+                <div class="card p-3 flex flex-col items-center text-center bg-yellow-50 border-cute-yellow transform hover:scale-105 transition">
+                    <div class="text-3xl mb-1 animate-bounce" style="animation-duration: 2s;">👑</div>
+                    <div class="text-[10px] font-black text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full mb-1">大牌王</div>
+                    <div class="font-black text-cute-dark text-sm truncate w-full px-1" id="king-big">...</div>
+                    <div class="text-[10px] text-gray-400 font-bold" id="king-big-val">0次</div>
+                </div>
+                <div class="card p-3 flex flex-col items-center text-center bg-purple-50 border-purple-200 transform hover:scale-105 transition">
+                    <div class="text-3xl mb-1 animate-pulse">🔥</div>
+                    <div class="text-[10px] font-black text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full mb-1">連莊王</div>
+                    <div class="font-black text-cute-dark text-sm truncate w-full px-1" id="king-continuance">...</div>
+                    <div class="text-[10px] text-gray-400 font-bold" id="king-continuance-val">0連莊</div>
+                </div>
+                <div class="card p-3 flex flex-col items-center text-center bg-red-50 border-cute-red transform hover:scale-105 transition">
+                    <div class="text-3xl mb-1 hover:rotate-12 transition">🤡</div>
+                    <div class="text-[10px] font-black text-red-500 bg-red-100 px-2 py-0.5 rounded-full mb-1">詐胡王</div>
+                    <div class="font-black text-cute-dark text-sm truncate w-full px-1" id="king-foul">...</div>
+                    <div class="text-[10px] text-gray-400 font-bold" id="king-foul-val">0次</div>
+                </div>
+                <div class="card p-3 flex flex-col items-center text-center bg-orange-50 border-orange-200 transform hover:scale-105 transition">
+                    <div class="text-3xl mb-1 hover:-rotate-12 transition">🙀</div>
+                    <div class="text-[10px] font-black text-orange-500 bg-orange-100 px-2 py-0.5 rounded-full mb-1">相公王</div>
+                    <div class="font-black text-cute-dark text-sm truncate w-full px-1" id="king-penalty">...</div>
+                    <div class="text-[10px] text-gray-400 font-bold" id="king-penalty-val">0次</div>
+                </div>
+            </div>
+
+            <div class="card p-5 animate-fade-in" style="animation-delay: 0.1s;">
+                <h3 class="font-black text-cute-dark mb-4 flex justify-between items-end">
+                    <span class="flex items-center gap-2"><span class="bg-cute-yellow w-6 h-6 rounded-full text-white flex items-center justify-center text-xs shadow-sm">🏆</span> 看診排行榜</span>
+                    <span class="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-full">依總分排序</span>
+                </h3>
+                <div id="rank-list" class="space-y-2">
+                    <div class="text-center text-gray-400 py-6 text-xs">正在洗牌...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 成就 Tab -->
+        <div id="tab-achievement" class="space-y-3 hidden">
+            <div id="achievement-list" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <!-- 4. 留言板 Tab -->
+        <div id="tab-guestbook" class="hidden space-y-4">
+            <div class="card p-5 border-t-8 border-cute-red animate-fade-in">
+                <h3 class="text-sm font-black text-cute-dark mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib text-cute-red"></i> 發布新留言
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="date" id="msg-date" class="w-1/3 bg-cute-cream border-0 rounded-2xl px-3 py-2 text-xs font-bold text-cute-dark outline-none focus:ring-2 focus:ring-cute-red transition">
+                        <input type="text" id="msg-name" list="player-options" placeholder="你是誰？" class="flex-1 bg-cute-cream border-0 rounded-2xl px-3 py-2 text-xs font-bold text-cute-dark outline-none focus:ring-2 focus:ring-cute-red transition">
+                        <datalist id="player-options"></datalist>
+                    </div>
+                    <textarea id="msg-content" rows="3" placeholder="寫下今日戰況、垃圾話或經典語錄..." class="w-full bg-cute-cream border-0 rounded-2xl px-3 py-3 text-sm font-bold text-cute-dark outline-none focus:ring-2 focus:ring-cute-red resize-none transition"></textarea>
+                    <button onclick="submitMessage()" class="btn-push w-full bg-cute-red text-white py-3 rounded-2xl font-black shadow-md hover:brightness-110 active:scale-95 transition text-sm">
+                        發布留言
+                    </button>
+                </div>
+            </div>
+            <div id="guestbook-list" class="space-y-3 pb-20"></div>
+        </div>
+
+    </div>
+
+    <!-- 公基金 Modal -->
+    <div id="fund-modal" class="hidden fixed inset-0 z-[70] flex items-end justify-center">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeFundModal()"></div>
+        <div class="relative bg-cute-cream w-full max-w-sm rounded-t-[2.5rem] shadow-2xl modal-enter p-6 pb-10 border-t-8 border-cute-yellow flex flex-col max-h-[85vh]">
+            <div class="w-16 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden shrink-0"></div>
+            
+            <h3 class="text-xl font-black text-cute-dark mb-4 flex items-center gap-2 shrink-0">
+                <i class="fa-solid fa-file-invoice-dollar text-cute-yellow"></i> 公基金流水帳
+            </h3>
+
+            <div class="bg-white p-4 rounded-2xl mb-4 space-y-3 shadow-sm shrink-0">
+                <input type="date" id="fund-date" class="w-full bg-cute-cream border-0 rounded-xl px-3 py-2 text-sm font-bold text-cute-dark outline-none focus:ring-2 focus:ring-cute-yellow">
+                <input type="text" id="fund-item" placeholder="項目 (如: 買飲料)" class="w-full bg-cute-cream border-0 rounded-xl px-3 py-2 text-sm font-bold text-cute-dark outline-none focus:ring-2 focus:ring-cute-yellow">
+                <div class="flex gap-2">
+                    <input type="number" id="fund-amount" placeholder="金額 (+/-)" class="flex-1 bg-cute-cream border-0 rounded-xl px-3 py-2 text-sm font-bold text-cute-dark outline-none focus:ring-2 focus:ring-cute-yellow">
+                    <button onclick="addFundRecord()" class="bg-cute-yellow text-cute-dark px-5 py-2 rounded-xl font-black shadow-sm active:scale-95 transition">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pr-1 space-y-2 mb-4" id="fund-list" style="min-height: 200px;"></div>
+            
+            <button onclick="closeFundModal()" class="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-2xl hover:bg-gray-300 transition shrink-0">
+                關閉
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ★ 你的測試版 URL
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxWOtO6F00m_OAu0zc1hzQn4F2BieA1ZXAF7Bv_8i5L5KfeN9kV07C_6JFH9DuJ_M4/exec'; 
+        
+        let rawData = [];
+        let fundRecords = [];
+        let msgRecords = [];
+        let configBigTypes = []; 
+
+        // 日曆相關變數
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let dailyStats = {}; // 保存每日統計數據
+
+        let currentPage = 1;
+        const ITEMS_PER_PAGE = 10;
+
+        // 運勢資料庫
+        const fortunes = [
+            { t: "大吉", d: "今日適合做大牌，國士無雙不是夢！", i: "🀄" },
+            { t: "中吉", d: "起手不順沒關係，絕張自摸在後頭。", i: "🀅" },
+            { t: "小吉", d: "穩紮穩打，屁胡也是胡，積少成多。", i: "🎲" },
+            { t: "微妙", d: "小心放槍，特別是生張要盯緊一點。", i: "⚠️" },
+            { t: "爆運", d: "槓上開花，海底撈月，通通來！", i: "🌸" },
+            { t: "慎行", d: "今日不宜貪大，見好就收。", i: "🛡️" },
+            { t: "天聽", d: "起手牌型極佳，聽牌速度超快！", i: "👂" },
+            { t: "人和", d: "下家會餵牌，上家不盯你，舒服。", i: "🤝" }
+        ];
+
+        // 隨機顯示運勢
+        function loadFortune() {
+            const f = fortunes[Math.floor(Math.random() * fortunes.length)];
+            document.getElementById('fortune-text').innerText = f.t;
+            document.getElementById('fortune-desc').innerText = f.d;
+            document.getElementById('fortune-icon').innerText = f.i;
+        }
+
+        async function fetchData() {
+            const loader = document.getElementById('loading-overlay');
+            if (loader) loader.classList.remove('hidden');
+
+            // 載入運勢
+            loadFortune();
+
+            try {
+                document.getElementById('last-update').innerText = "同步中...";
+                const res = await fetch(API_URL);
+                const json = await res.json();
+                
+                if(json.status === 'success') {
+                    rawData = json.data;        
+                    fundRecords = json.fundData || [];
+                    msgRecords = json.msgData || [];
+                    configBigTypes = json.bigTypes || []; 
+                    
+                    processData(rawData);
+                    renderGuestbook();
+                } else {
+                    document.getElementById('last-update').innerText = "讀取錯誤";
+                }
+            } catch (e) {
+                console.error(e);
+                document.getElementById('last-update').innerText = "連線失敗";
+            } finally {
+                setTimeout(() => {
+                    if (loader) loader.classList.add('hidden');
+                }, 500);
+            }
+        }
+
+        function processData(data) {
+            const INITIAL_FUND_BASE = 3250; 
+            
+            let fundLogsTotal = 0;
+            fundRecords.forEach(r => { fundLogsTotal += (parseInt(r.amount) || 0); });
+            let totalFund = INITIAL_FUND_BASE + fundLogsTotal;
+
+            const players = {}; 
+            const achievementMap = {};
+            let totalGames = 0;
+            const processedGames = new Set();
+            dailyStats = {}; // 重置日曆數據
+
+            const targetTypes = (configBigTypes.length > 0) ? configBigTypes : ["天胡", "字一色", "清一色"];
+            targetTypes.forEach(t => { achievementMap[t] = { count: 0, users: {} }; });
+
+            // 找出最後一筆資料的日期，以便日曆跳轉
+            let lastGameDate = new Date();
+
+            if (data.length > 0) {
+                const lastItem = data[data.length - 1];
+                let dateDisplay = lastItem.date ? new Date(lastItem.date).toLocaleDateString() : "未知";
+                document.getElementById('last-update').innerText = `更新：${dateDisplay}`;
+                
+                // 設定日曆初始月份為最新資料的月份
+                const d = new Date(lastItem.date);
+                if (!isNaN(d.getTime())) {
+                    lastGameDate = d;
+                    currentYear = d.getFullYear();
+                    currentMonth = d.getMonth();
+                }
+            } else {
+                document.getElementById('last-update').innerText = "尚無紀錄";
+            }
+
+            // 統計數據
+            data.forEach(row => {
+                const name = String(row.name);
+                const score = parseInt(row.score) || 0;
+                
+                // 處理日期字串標準化 (YYYY-MM-DD)
+                let dateStr = row.date;
+                let dateObj = new Date(row.date);
+                if (!isNaN(dateObj.getTime())) {
+                     // 改用本地時間格式化，避免時區導致日期偏移 (例如 1/7 變 1/6)
+                     const y = dateObj.getFullYear();
+                     const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                     const d = String(dateObj.getDate()).padStart(2, '0');
+                     dateStr = `${y}-${m}-${d}`;
+                }
+                
+                const gameKey = `${dateStr}-R${row.round}`;
+
+                // --- 每日統計 ---
+                if (!dailyStats[dateStr]) {
+                    dailyStats[dateStr] = { count: 0, scores: {}, bigHands: [], rounds: {} };
+                }
+                
+                // 每個人的分數 (當日總計)
+                if(!dailyStats[dateStr].scores[name]) dailyStats[dateStr].scores[name] = 0;
+                dailyStats[dateStr].scores[name] += score;
+
+                // 每一醬的詳細成績
+                if(!dailyStats[dateStr].rounds[row.round]) dailyStats[dateStr].rounds[row.round] = [];
+                dailyStats[dateStr].rounds[row.round].push({ name: name, score: score });
+
+                // 收集當日大牌
+                if (row.bigNames) {
+                    const hands = String(row.bigNames).split(',').filter(h => h);
+                    hands.forEach(h => {
+                         dailyStats[dateStr].bigHands.push({ name: name, type: h });
+                    });
+                }
+                
+                // 計算總局數 (避免一局四人重複算)
+                if (!processedGames.has(gameKey)) {
+                    processedGames.add(gameKey);
+                    totalGames++;
+                    dailyStats[dateStr].count++;
+                }
+
+                // --- 玩家個人累計 ---
+                if (!players[name]) players[name] = { 
+                    name: name, total: 0, rounds: 0, wins: 0, 
+                    bigCount: 0, penaltyCount: 0, foulCount: 0, bigHands: [],
+                    maxContinuance: 0 
+                };
+
+                players[name].total += score;
+                players[name].rounds += 1;
+                if (score > 0) players[name].wins += 1;
+                players[name].penaltyCount += (parseInt(row.penalty) || 0);
+                players[name].foulCount += (parseInt(row.foul) || 0);
+
+                const currentContinuance = parseInt(row.continuance) || 0;
+                if (currentContinuance > players[name].maxContinuance) {
+                    players[name].maxContinuance = currentContinuance;
+                }
+                
+                if (row.bigNames) {
+                    const hands = String(row.bigNames).split(',').filter(h => h);
+                    players[name].bigCount += hands.length;
+                    players[name].bigHands.push(...hands);
+                    hands.forEach(h => {
+                        const type = h.trim();
+                        if (achievementMap[type]) {
+                            achievementMap[type].count++;
+                            if(!achievementMap[type].users[name]) achievementMap[type].users[name] = 0;
+                            achievementMap[type].users[name]++;
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('stat-total-games').innerText = totalGames;
+            document.getElementById('stat-total-fund').innerText = totalFund;
+            const sign = fundLogsTotal >= 0 ? '+' : '';
+            document.getElementById('fund-base-display').innerText = `含底金 (帳面 ${sign}${fundLogsTotal})`;
+
+            // 渲染介面
+            renderCalendar();
+            // 預設選中最新有資料的一天
+            if(data.length > 0) {
+                 selectDate(lastGameDate.toISOString().split('T')[0]);
+            } else {
+                 selectDate(new Date().toISOString().split('T')[0]);
+            }
+
+            const sortedPlayers = Object.values(players).sort((a, b) => b.total - a.total);
+            renderLeaderboard(sortedPlayers);
+            renderKings(players);
+            renderAchievements(achievementMap);
+            renderPlayerOptions(Object.keys(players));
+        }
+
+        // 渲染玩家名單選項
+        function renderPlayerOptions(names) {
+            const datalist = document.getElementById('player-options');
+            if(datalist) {
+                datalist.innerHTML = names.sort().map(n => `<option value="${n}">`).join('');
+            }
+        }
+
+        // === 日曆核心邏輯 ===
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-body');
+            const title = document.getElementById('calendar-title');
+            
+            grid.innerHTML = '';
+            title.innerText = `${currentYear}年 ${currentMonth + 1}月`;
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay(); // 當月第一天是星期幾
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // 當月總天數
+
+            // 填充前面的空白
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div class="calendar-day empty"></div>`;
+            }
+
+            // 填充日期
+            for (let d = 1; d <= daysInMonth; d++) {
+                // 格式化日期 key: YYYY-MM-DD
+                const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const hasData = dailyStats[dateKey];
+                
+                let className = 'calendar-day';
+                let content = `<span>${d}</span>`;
+                
+                if (hasData) {
+                    className += ' has-game';
+                    content += `<div class="text-[10px] mt-0.5 transform scale-125">🀄</div>`; // 標記有局
+                } else {
+                    content += `<div class="h-4"></div>`; // 佔位
+                }
+
+                grid.innerHTML += `
+                    <div class="${className}" id="day-${dateKey}" onclick="selectDate('${dateKey}')">
+                        ${content}
+                    </div>
+                `;
+            }
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+            // 切換月份時，隱藏詳細面板
+            document.getElementById('day-detail-panel').classList.add('hidden');
+            document.getElementById('day-empty-panel').classList.remove('hidden');
+        }
+
+        function selectDate(dateKey) {
+            // UI 更新選中狀態
+            document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
+            const target = document.getElementById(`day-${dateKey}`);
+            
+            // 如果切換到不同月份的日期，先跳轉月份 (處理初始載入情況)
+            const [y, m, d] = dateKey.split('-').map(Number);
+            if(y !== currentYear || (m-1) !== currentMonth) {
+                currentYear = y;
+                currentMonth = m - 1;
+                renderCalendar();
+                // 重新抓取 DOM
+                const newTarget = document.getElementById(`day-${dateKey}`);
+                if(newTarget) newTarget.classList.add('selected');
+            } else {
+                if(target) target.classList.add('selected');
+            }
+
+            // 顯示詳情
+            const detailPanel = document.getElementById('day-detail-panel');
+            const emptyPanel = document.getElementById('day-empty-panel');
+            const stat = dailyStats[dateKey];
+
+            if (stat) {
+                emptyPanel.classList.add('hidden');
+                detailPanel.classList.remove('hidden');
+
+                // 星期幾
+                const weekDay = ['日','一','二','三','四','五','六'][new Date(dateKey).getDay()];
+                document.getElementById('detail-date').innerText = `${m}/${d} (${weekDay})`;
+                document.getElementById('detail-total').innerText = `共 ${stat.count} 局`;
+
+                // 計算當日大贏家
+                let maxScore = -99999;
+                let winnerName = "無";
+                for (const [name, s] of Object.entries(stat.scores)) {
+                    if (s > maxScore) {
+                        maxScore = s;
+                        winnerName = name;
+                    }
+                }
+                const color = maxScore > 0 ? 'text-cute-red' : 'text-gray-500';
+                document.getElementById('detail-winner').innerHTML = `${winnerName} <span class="${color} ml-1">(${maxScore>0?'+':''}${maxScore})</span>`;
+
+                // 顯示大牌
+                const handsContainer = document.getElementById('detail-hands');
+                handsContainer.innerHTML = '';
+                if(stat.bigHands.length > 0) {
+                    stat.bigHands.forEach(h => {
+                         handsContainer.innerHTML += `<span class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold border border-yellow-200 mr-1 mb-1 inline-block">${h.name}:${h.type}</span>`;
+                    });
+                } else {
+                    handsContainer.innerHTML = `<span class="text-[10px] text-gray-400">本日無特殊大牌</span>`;
+                }
+
+                // 顯示每一醬的詳細分數
+                const roundsList = document.getElementById('detail-rounds-list');
+                roundsList.innerHTML = '';
+                const roundsObj = stat.rounds || {};
+                const sortedRounds = Object.keys(roundsObj).sort((a,b) => parseInt(a) - parseInt(b));
+
+                if (sortedRounds.length > 0) {
+                    roundsList.innerHTML = `<h5 class="font-bold text-xs text-gray-400 mb-2 mt-3 flex items-center gap-1"><i class="fa-solid fa-list-ol"></i> 詳細戰績</h5>`;
+                    sortedRounds.forEach(rNum => {
+                        const players = roundsObj[rNum];
+                        players.sort((a,b) => b.score - a.score);
+                        
+                        let roundHtml = `<div class="bg-white rounded-xl p-3 border border-gray-100 shadow-sm text-xs mb-2">
+                            <div class="font-black text-gray-300 mb-2 border-b border-gray-50 pb-1 flex justify-between">
+                                <span>第 ${rNum} 醬</span>
+                            </div>
+                            <div class="grid grid-cols-4 gap-1">`;
+                        
+                        players.forEach(p => {
+                             const pColor = p.score > 0 ? 'text-cute-red' : (p.score < 0 ? 'text-green-600' : 'text-gray-400');
+                             const scoreStr = p.score > 0 ? `+${p.score}` : p.score;
+                             roundHtml += `<div class="text-center flex flex-col items-center">
+                                <div class="font-bold text-gray-600 mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis max-w-full" style="font-size: 0.7rem;">${p.name}</div>
+                                <div class="font-black ${pColor} text-sm">${scoreStr}</div>
+                             </div>`;
+                        });
+                        
+                        roundHtml += `</div></div>`;
+                        roundsList.innerHTML += roundHtml;
+                    });
+                }
+
+            } else {
+                emptyPanel.classList.remove('hidden');
+                detailPanel.classList.add('hidden');
+            }
+        }
+        // === 日曆邏輯結束 ===
+
+        async function submitMessage() {
+            const date = document.getElementById('msg-date').value;
+            const name = document.getElementById('msg-name').value.trim();
+            const content = document.getElementById('msg-content').value.trim();
+            const btn = document.querySelector('button[onclick="submitMessage()"]');
+
+            if (!date || !name || !content) { alert('請填寫完整'); return; }
+
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    body: JSON.stringify({ type: 'message', date: date, name: name, message: content })
+                });
+                document.getElementById('msg-content').value = '';
+                document.getElementById('msg-date').valueAsDate = new Date();
+                await fetchData();
+            } catch (e) { alert('發布失敗'); } finally {
+                btn.disabled = false; btn.innerHTML = originalText;
+            }
+        }
+
+        function switchTab(tabName) { 
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn flex-1 py-2 rounded-xl text-xs font-black text-white/80 hover:bg-white/10 transition whitespace-nowrap px-2';
+            });
+            const btnId = `btn-${tabName}`;
+            const targetBtn = document.getElementById(btnId);
+            if(targetBtn) {
+                targetBtn.className = 'tab-btn active flex-1 py-2 rounded-xl text-xs font-black transition whitespace-nowrap px-2';
+            }
+            ['overview', 'ranking', 'achievement', 'guestbook'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if(el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(`tab-${tabName}`);
+            if(target) target.classList.remove('hidden');
+        }
+
+        function renderGuestbook() { 
+            const list = document.getElementById('guestbook-list');
+            if(msgRecords.length === 0) { list.innerHTML = `<div class="text-center text-white/50 py-8 text-xs italic">還沒有人留言...</div>`; return; }
+            const sortedMsgs = [...msgRecords].reverse();
+            const totalPages = Math.ceil(sortedMsgs.length / ITEMS_PER_PAGE);
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const currentData = sortedMsgs.slice(startIndex, endIndex);
+            
+            // 使用字串組合後再一次性插入，避免重繪
+            let itemsHtml = currentData.map((msg, index) => {
+                let dateShow = msg.date;
+                const d = new Date(msg.date);
+                if(!isNaN(d.getTime())) {
+                    dateShow = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+                }
+                const safeName = String(msg.name); 
+                const firstChar = safeName.substring(0, 1);
+                
+                // 增加延遲動畫 style
+                return `
+                <div class="flex gap-3 bg-white p-4 rounded-2xl border-4 border-white shadow-[0_4px_0_rgba(0,0,0,0.05)] animate-fade-in transform hover:-translate-y-1 transition" style="animation-delay: ${index * 0.05}s">
+                    <div class="flex-shrink-0 w-10 h-10 bg-cute-yellow text-cute-dark rounded-full flex items-center justify-center font-black shadow-inner border-2 border-white">${firstChar}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="font-black text-cute-dark text-sm">${safeName}</div>
+                            <div class="text-[10px] text-gray-400 font-bold bg-gray-100 px-2 py-0.5 rounded-full">${dateShow}</div>
+                        </div>
+                        <p class="text-gray-600 text-xs font-bold leading-relaxed whitespace-pre-wrap">${msg.message}</p>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            const paginationHtml = `<div class="flex justify-center items-center gap-4 mt-6 pt-2 animate-fade-in" style="animation-delay: 0.5s"><button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''} class="w-10 h-10 rounded-full bg-white shadow-sm border-2 border-white text-cute-red hover:bg-cute-cream transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold"><i class="fa-solid fa-chevron-left"></i></button><span class="text-xs font-black text-white bg-white/20 px-3 py-1 rounded-full">第 ${currentPage} / ${totalPages} 頁</span><button onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''} class="w-10 h-10 rounded-full bg-white shadow-sm border-2 border-white text-cute-red hover:bg-cute-cream transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-bold"><i class="fa-solid fa-chevron-right"></i></button></div>`;
+            
+            list.innerHTML = itemsHtml + paginationHtml;
+        }
+
+        function changePage(delta) { currentPage += delta; renderGuestbook(); document.getElementById('tab-guestbook').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+        function renderLeaderboard(players) { 
+            const container = document.getElementById('rank-list');
+            
+            let htmlContent = '';
+            players.forEach((p, index) => {
+                let rankStyle = "bg-white border-gray-100";
+                
+                // 設定預設樣式 (數字)
+                let badgeBg = "bg-gray-100 text-gray-500 border-gray-200";
+                let rankLabel = `${index + 1}`;
+                
+                // 前三名特別樣式
+                if (index === 0) { 
+                    rankLabel = `🥇`; 
+                    rankStyle = "bg-yellow-50 border-yellow-200"; 
+                    badgeBg = "bg-yellow-100 text-yellow-700 border-yellow-200";
+                }
+                else if (index === 1) { 
+                    rankLabel = `🥈`; 
+                    badgeBg = "bg-gray-200 text-gray-600 border-gray-300";
+                }
+                else if (index === 2) { 
+                    rankLabel = `🥉`; 
+                    badgeBg = "bg-orange-100 text-orange-700 border-orange-200";
+                }
+                
+                const scoreColor = p.total >= 0 ? 'text-cute-red' : 'text-green-600';
+                
+                // 加入動畫延遲
+                htmlContent += `
+                    <div class="flex items-center justify-between p-3 rounded-2xl border-2 ${rankStyle} mb-2 shadow-sm relative animate-fade-in transform hover:scale-[1.02] transition" style="animation-delay: ${index * 0.05}s">
+                        <div class="flex items-center gap-3">
+                            <div class="text-lg font-black ${badgeBg} w-10 h-10 flex items-center justify-center rounded-lg border shadow-sm">${rankLabel}</div>
+                            <div>
+                                <div class="font-black text-cute-dark">${p.name}</div>
+                                <div class="text-[10px] text-gray-400 font-bold bg-white/50 px-1.5 rounded inline-block">共 ${p.rounds} 局</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-lg ${scoreColor} font-mono">${p.total > 0 ? '+' : ''}${p.total}</div>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = htmlContent;
+        }
+
+        function renderKings(playersObj) { 
+            const list = Object.values(playersObj);
+            const findKings = (key) => { const maxVal = Math.max(...list.map(p => p[key])); if (maxVal === 0) return null; const winners = list.filter(p => p[key] === maxVal); return { names: winners.map(p => p.name).join(' & '), count: maxVal }; };
+            const bigKing = findKings('bigCount');
+            const foulKing = findKings('foulCount');
+            const penaltyKing = findKings('penaltyCount');
+            const continuanceKing = findKings('maxContinuance'); 
+            const updateKingUI = (id, data, unit = "次") => { if(data) { document.getElementById(id).innerText = data.names; if(data.names.length > 10) document.getElementById(id).classList.replace('text-sm', 'text-xs'); document.getElementById(id + '-val').innerText = `${data.count}${unit}`; } else { document.getElementById(id).innerText = "從缺"; document.getElementById(id + '-val').innerText = `0${unit}`; } };
+            updateKingUI('king-big', bigKing);
+            updateKingUI('king-foul', foulKing);
+            updateKingUI('king-penalty', penaltyKing);
+            updateKingUI('king-continuance', continuanceKing, "連莊"); 
+        }
+
+        function renderAchievements(map) { 
+            const container = document.getElementById('achievement-list');
+            let htmlContent = '';
+            let idx = 0;
+            for (const [type, data] of Object.entries(map)) {
+                let usersHtml = data.count > 0 ? Object.entries(data.users).sort((a, b) => b[1] - a[1]).map(([name, count]) => `<span class="inline-block bg-white px-2 py-1 rounded-lg text-xs text-cute-dark font-bold border border-gray-100 shadow-sm mr-1 mb-1">${name} <span class="text-cute-red ml-1">x${count}</span></span>`).join('') : `<span class="text-xs text-gray-300 italic font-bold">尚無人達成</span>`;
+                const cardStyle = data.count > 0 ? 'bg-yellow-50 border-cute-yellow opacity-100' : 'bg-gray-50 border-gray-100 opacity-60 grayscale';
+                const iconColor = data.count > 0 ? 'text-cute-red' : 'text-gray-300';
+                
+                htmlContent += `<div class="rounded-2xl border-4 ${cardStyle} p-4 flex flex-col gap-2 transition hover:grayscale-0 shadow-sm animate-fade-in hover:scale-[1.02]" style="animation-delay: ${idx * 0.05}s"><div class="flex justify-between items-center"><span class="font-black text-cute-dark flex items-center gap-2 text-lg"><i class="fa-solid fa-dragon ${iconColor}"></i> ${type}</span><span class="text-xs font-black text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">共 ${data.count} 次</span></div><div class="mt-1 flex flex-wrap">${usersHtml}</div></div>`;
+                idx++;
+            }
+            container.innerHTML = htmlContent;
+        }
+
+        function openFundModal() {
+            document.getElementById('fund-modal').classList.remove('hidden');
+            document.getElementById('fund-date').valueAsDate = new Date();
+            renderFundList(); 
+        }
+        function closeFundModal() { document.getElementById('fund-modal').classList.add('hidden'); }
+        async function addFundRecord() {
+            const date = document.getElementById('fund-date').value;
+            const item = document.getElementById('fund-item').value.trim();
+            const amount = parseInt(document.getElementById('fund-amount').value);
+            const btn = document.querySelector('button[onclick="addFundRecord()"]');
+            if (!date || !item || isNaN(amount)) { alert('請填寫完整資料'); return; }
+            const originalText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            try { await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'fund', date: date, item: item, amount: amount }) }); document.getElementById('fund-item').value = ''; document.getElementById('fund-amount').value = ''; await fetchData(); } catch (e) { alert('上傳失敗'); } finally { btn.disabled = false; btn.innerHTML = originalText; }
+        }
+        function renderFundList() {
+            const list = document.getElementById('fund-list');
+            if(fundRecords.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-8 text-xs font-bold">目前無雲端紀錄</div>`; return; }
+            const sortedRecords = [...fundRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const groups = {};
+            sortedRecords.forEach(r => {
+                const d = new Date(r.date); let monthKey = "未知";
+                if(!isNaN(d.getTime())) { monthKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+                if(!groups[monthKey]) { groups[monthKey] = { total: 0, items: [] }; }
+                groups[monthKey].items.push(r); groups[monthKey].total += (parseInt(r.amount) || 0);
+            });
+            list.innerHTML = Object.keys(groups).map((monthKey, index) => {
+                const group = groups[monthKey]; const isCurrentMonth = index === 0;
+                const monthTotalColor = group.total >= 0 ? 'text-cute-red' : 'text-green-600';
+                const sign = group.total > 0 ? '+' : '';
+                const itemsHtml = group.items.map((r, idx) => {
+                    let day = "??"; const d = new Date(r.date);
+                    if(!isNaN(d.getTime())) day = String(d.getDate()).padStart(2, '0');
+                    // 增加淡入動畫
+                    return `<div class="flex justify-between items-center bg-white p-3 border-b border-gray-100 last:border-0 hover:bg-cute-cream transition animate-fade-in" style="animation-delay: ${idx * 0.05}s"><div class="flex items-center gap-3"><div class="text-xs font-black text-cute-red bg-cute-cream w-8 h-8 flex items-center justify-center rounded-lg">${day}日</div><div class="font-bold text-gray-700 text-sm">${r.item}</div></div><div class="font-black ${r.amount >= 0 ? 'text-cute-red' : 'text-green-600'}">${r.amount > 0 ? '+' : ''}${r.amount}</div></div>`;
+                }).join('');
+                return `<details class="group mb-3 border-2 border-gray-100 rounded-2xl bg-white overflow-hidden shadow-sm animate-fade-in" ${isCurrentMonth ? 'open' : ''} style="animation-delay: ${index * 0.1}s"><summary class="flex justify-between items-center p-4 cursor-pointer select-none bg-gray-50 hover:bg-gray-100 transition"><div class="flex items-center gap-2 font-black text-gray-600"><i class="fa-regular fa-calendar-days text-cute-yellow"></i><span>${monthKey}</span></div><div class="font-black text-sm ${monthTotalColor}">小計 ${sign}${group.total}</div></summary><div class="border-t border-gray-100">${itemsHtml}</div></details>`;
+            }).join('');
+        }
+        
+        document.getElementById('msg-date').valueAsDate = new Date();
+        document.getElementById('fund-date').valueAsDate = new Date();
+        fetchData();
+    </script>
+</body>
+</html>
