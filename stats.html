@@ -2,13 +2,13 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>排行榜</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="cat1.png">
-    <link rel="apple-touch-icon" href="cat1.png">    
+    <link rel="icon" href="cute.png">
+    <link rel="apple-touch-icon" href="cute.png">    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🀄</text></svg>">
     <script>
         tailwind.config = {
@@ -17,12 +17,12 @@
                     fontFamily: { sans: ['"Zen Maru Gothic"', 'sans-serif'] },
                     colors: { 
                         cute: { 
-                            red: '#ff6b6b',       // 糖果紅
-                            dark: '#c92a2a',      // 深紅字
-                            yellow: '#ffd43b',    // 亮奶黃
-                            cream: '#fff0f3',     // 粉白底
-                            bg: '#ff8787',        // 背景紅
-                            green: '#51cf66'      // 勝者綠
+                            red: '#ff6b6b',
+                            dark: '#c92a2a',
+                            yellow: '#ffd43b',
+                            cream: '#fff0f3',
+                            bg: '#ff8787',
+                            green: '#51cf66'
                         } 
                     }
                 }
@@ -30,24 +30,38 @@
         }
     </script>
     <style>
-        /* 修改 2: 全局字體放大設定 (優化版) */
+        /* =========================================
+           關鍵修正區：只放大字，不放大框
+           ========================================= */
+        
+        /* 1. 恢復根元素字體大小，確保版面(rem單位)不會撐破手機螢幕 */
         :root {
-            font-size: 17px; /* 電腦版 */
+            font-size: 16px; 
         }
+
+        /* 2. 手機版專用調整 */
         @media (max-width: 768px) {
-            :root {
-                /* 手機版基準字體加大，但不要大到 19px 以免破版，改 18px 比較剛好 */
-                font-size: 18px; 
-            }
-            /* 強制覆蓋 Tailwind 的小字體設定 */
+            /* 針對太小的字，強制設定為清晰可讀的像素值 */
+            
+            /* 原本 10px 的字 -> 改為 12px */
             .text-\[10px\] { font-size: 12px !important; }
             .text-\[9px\] { font-size: 11px !important; }
             .text-\[8px\] { font-size: 10px !important; }
-            .text-xs { font-size: 0.85rem !important; } 
-            .text-sm { font-size: 1rem !important; } /* 讓內文更清楚 */
             
-            /* 讓日曆日期大一點，但不要擠壓 */
-            .calendar-day { font-size: 0.95rem !important; }
+            /* text-xs (原本 12px) -> 改為 13.5px */
+            .text-xs { font-size: 13.5px !important; line-height: 1.4 !important; }
+            
+            /* text-sm (原本 14px) -> 改為 15.5px */
+            .text-sm { font-size: 15.5px !important; line-height: 1.5 !important; }
+            
+            /* text-base (原本 16px) -> 改為 17px */
+            .text-base { font-size: 17px !important; }
+
+            /* 日曆日期數字加大 */
+            .calendar-day span { font-size: 16px !important; }
+            
+            /* 稍微縮小容器內邊距，讓內容有更多空間 */
+            body.px-4 { padding-left: 12px !important; padding-right: 12px !important; }
         }
 
         body { 
@@ -59,17 +73,16 @@
             background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
             color: #495057;
             -webkit-tap-highlight-color: transparent;
-            
-            /* ★ 關鍵修正：確保不會出現左右捲軸 */
+            /* 防止左右滑動 */
             overflow-x: hidden; 
             width: 100%;
             -webkit-font-smoothing: antialiased;
         }
         .card { 
             background: #ffffff; 
-            border-radius: 2rem; 
+            border-radius: 1.5rem; /* 稍微減小圓角讓空間更多 */
             border: 4px solid #fff; 
-            box-shadow: 0 6px 0 rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.1);
         }
         .tab-btn { transition: all 0.2s; border-bottom: 4px solid transparent; }
         .tab-btn.active { background-color: #ff6b6b; color: white; transform: translateY(-2px); border-bottom-color: #c92a2a; box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4); }
@@ -78,7 +91,7 @@
         .modal-enter { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* 新增動畫效果 */
+        /* 動畫效果 */
         @keyframes float { 
             0%, 100% { transform: translateY(0) rotate(0deg); } 
             50% { transform: translateY(-20px) rotate(5deg); } 
@@ -90,7 +103,6 @@
         .animate-float { animation: float 6s ease-in-out infinite; }
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         
-        /* 背景漂浮元素 */
         .bg-floating-icon { 
             position: fixed; 
             z-index: 0; 
@@ -102,15 +114,14 @@
         }
 
         /* 日曆樣式 */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; } /* 縮小間距防止破版 */
         .calendar-day { 
             aspect-ratio: 1; 
             display: flex; 
             flex-direction: column;
             align-items: center; 
             justify-content: center; 
-            border-radius: 0.75rem; 
-            font-size: 0.8rem; 
+            border-radius: 0.6rem; 
             font-weight: 900;
             position: relative;
             cursor: pointer;
@@ -126,7 +137,7 @@
         .calendar-day.selected { 
             background-color: #ff6b6b !important; 
             color: white !important; 
-            box-shadow: 0 4px 0 #c92a2a;
+            box-shadow: 0 3px 0 #c92a2a;
             transform: translateY(-2px);
             border-color: transparent;
             z-index: 20;
@@ -165,17 +176,14 @@
         </a>
     </div>
 
-    <div class="max-w-lg mx-auto relative z-20">
+    <div class="w-full max-w-lg mx-auto relative z-20">
         
-        <div class="bg-white/20 p-1.5 rounded-2xl flex mb-6 shadow-inner backdrop-blur-sm border-2 border-white/30">
-        <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn active flex-1 py-2.5 rounded-xl text-sm font-black transition whitespace-nowrap px-1 drop-shadow-sm">戰況日曆</button>
-        
-        <button onclick="switchTab('ranking')" id="btn-ranking" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-black text-white hover:bg-white/10 transition whitespace-nowrap px-1 drop-shadow-md">風雲榜</button>
-        
-        <button onclick="switchTab('achievement')" id="btn-achievement" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-black text-white hover:bg-white/10 transition whitespace-nowrap px-1 drop-shadow-md">成就</button>
-        
-        <button onclick="switchTab('guestbook')" id="btn-guestbook" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-black text-white hover:bg-white/10 transition whitespace-nowrap px-1 drop-shadow-md">留言</button>
-    </div>
+        <div class="bg-white/20 p-1.5 rounded-2xl flex mb-6 shadow-inner backdrop-blur-sm border-2 border-white/30 overflow-x-auto hide-scrollbar">
+            <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn active flex-1 py-2.5 rounded-xl text-sm font-black transition whitespace-nowrap px-1 drop-shadow-sm min-w-[70px]">戰況日曆</button>
+            <button onclick="switchTab('ranking')" id="btn-ranking" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-black text-white hover:bg-white/10 transition whitespace-nowrap px-1 drop-shadow-md min-w-[60px]">風雲榜</button>
+            <button onclick="switchTab('achievement')" id="btn-achievement" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-black text-white hover:bg-white/10 transition whitespace-nowrap px-1 drop-shadow-md min-w-[50px]">成就</button>
+            <button onclick="switchTab('guestbook')" id="btn-guestbook" class="tab-btn flex-1 py-2.5 rounded-xl text-sm font-black text-white hover:bg-white/10 transition whitespace-nowrap px-1 drop-shadow-md min-w-[50px]">留言</button>
+        </div>
 
         <div id="tab-overview" class="space-y-4 animate-fade-in">
             
@@ -184,22 +192,22 @@
                 <div class="relative z-10">
                     <h3 class="font-black text-xs mb-2 opacity-90 flex items-center gap-1"><i class="fa-solid fa-star text-yellow-300"></i> 今日雀運</h3>
                     <div class="flex items-center gap-4">
-                        <div class="text-4xl bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-inner" id="fortune-icon">🎲</div>
-                        <div>
-                            <div class="font-black text-2xl tracking-wide drop-shadow-sm" id="fortune-text">載入中...</div>
-                            <div class="text-xs font-bold opacity-90 mt-1" id="fortune-desc">...</div>
+                        <div class="text-4xl bg-white/20 w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-sm shadow-inner shrink-0" id="fortune-icon">🎲</div>
+                        <div class="min-w-0">
+                            <div class="font-black text-2xl tracking-wide drop-shadow-sm truncate" id="fortune-text">載入中...</div>
+                            <div class="text-xs font-bold opacity-90 mt-1 leading-tight" id="fortune-desc">...</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <div class="card p-4 flex flex-col items-center justify-center relative overflow-hidden hover:scale-[1.02] transition">
+                <div class="card p-3 flex flex-col items-center justify-center relative overflow-hidden hover:scale-[1.02] transition">
                     <div class="absolute -right-4 -bottom-4 text-7xl text-gray-50 rotate-12 pointer-events-none z-0">🀄</div>
                     <span class="relative z-10 text-gray-400 text-[10px] font-black uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-lg mb-1">總戰局數</span>
                     <span class="relative z-10 text-3xl font-black text-cute-red" id="stat-total-games">0</span>
                 </div>
-                <div onclick="openFundModal()" class="card p-4 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:border-cute-yellow transition group border-2 border-transparent hover:scale-[1.02]">
+                <div onclick="openFundModal()" class="card p-3 flex flex-col items-center justify-center relative overflow-hidden cursor-pointer hover:border-cute-yellow transition group border-2 border-transparent hover:scale-[1.02]">
                     <div class="absolute -right-4 -bottom-4 text-7xl text-yellow-50 rotate-12 pointer-events-none z-0">💰</div>
                     <span class="relative z-10 text-gray-400 text-[10px] font-black uppercase tracking-wider bg-yellow-50 px-2 py-0.5 rounded-lg mb-1 flex items-center gap-1">公基金 <i class="fa-solid fa-pen text-[10px]"></i></span>
                     <span class="relative z-10 text-3xl font-black text-cute-yellow" id="stat-total-fund">0</span>
@@ -207,7 +215,7 @@
                 </div>
             </div>
 
-            <div class="card p-5 hover:shadow-lg transition duration-300">
+            <div class="card p-4 hover:shadow-lg transition duration-300">
                 <div class="flex justify-between items-center mb-4">
                     <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:bg-cute-red hover:text-white transition flex items-center justify-center font-bold active:scale-90">
                         <i class="fa-solid fa-chevron-left"></i>
@@ -241,8 +249,8 @@
                     </div>
                     
                     <div class="flex items-center gap-2 mb-2">
-                         <span class="text-xs font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">🏆 大贏家</span>
-                         <span id="detail-winner" class="text-sm font-black text-cute-dark">載入中...</span>
+                         <span class="text-xs font-bold text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100 shrink-0">🏆 大贏家</span>
+                         <span id="detail-winner" class="text-sm font-black text-cute-dark truncate">載入中...</span>
                     </div>
 
                     <div id="detail-hands" class="flex flex-wrap gap-1 mt-2 mb-3">
