@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.05, maximum-scale=3.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     <title>排行榜</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,23 +30,24 @@
         }
     </script>
     <style>
-        /* 修改 2: 全局字體放大設定 */
+        /* 修改 2: 全局字體放大設定 (優化版) */
         :root {
-            font-size: 17px; /* 電腦版稍微大一點 */
+            font-size: 17px; /* 電腦版 */
         }
         @media (max-width: 768px) {
             :root {
-                font-size: 19px; /* 手機版基準字體加大到 19px，所有 rem 單位會跟著變大 */
+                /* 手機版基準字體加大，但不要大到 19px 以免破版，改 18px 比較剛好 */
+                font-size: 18px; 
             }
-            /* 強制覆蓋 Tailwind 的小字體設定，讓它在手機上清楚可見 */
+            /* 強制覆蓋 Tailwind 的小字體設定 */
             .text-\[10px\] { font-size: 12px !important; }
             .text-\[9px\] { font-size: 11px !important; }
             .text-\[8px\] { font-size: 10px !important; }
-            .text-xs { font-size: 0.85rem !important; } /* 約 16px */
-            .text-sm { font-size: 0.95rem !important; } /* 約 18px */
+            .text-xs { font-size: 0.85rem !important; } 
+            .text-sm { font-size: 1rem !important; } /* 讓內文更清楚 */
             
-            /* 加大日曆格子裡的日期數字 */
-            .calendar-day { font-size: 0.9rem !important; }
+            /* 讓日曆日期大一點，但不要擠壓 */
+            .calendar-day { font-size: 0.95rem !important; }
         }
 
         body { 
@@ -58,8 +59,10 @@
             background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
             color: #495057;
             -webkit-tap-highlight-color: transparent;
-            overflow-x: hidden;
-            /* 讓字體渲染更清晰 */
+            
+            /* ★ 關鍵修正：確保不會出現左右捲軸 */
+            overflow-x: hidden; 
+            width: 100%;
             -webkit-font-smoothing: antialiased;
         }
         .card { 
@@ -1218,4 +1221,5 @@
     </div>
     </div>
 </body>
+
 </html>
