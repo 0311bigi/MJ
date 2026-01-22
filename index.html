@@ -3,11 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🧧週皮膚科</title>
+    <title>麻將餐</title>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="cat1.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ff8787">
+    <link rel="icon" href="cute.png">	
+    <link rel="apple-touch-icon" href="cute.png">
     <script>
         tailwind.config = {
             theme: {
@@ -15,11 +20,11 @@
                     fontFamily: { sans: ['"Zen Maru Gothic"', 'sans-serif'] },
                     colors: { 
                         cute: { 
-                            red: '#ff6b6b',      // 糖果紅
-                            dark: '#c92a2a',     // 深紅字
-                            yellow: '#ffd43b',   // 亮奶黃
-                            cream: '#fff0f3',    // 粉白底
-                            bg: '#ff8787'        // 背景紅
+                            red: '#ff6b6b',       // 糖果紅
+                            dark: '#c92a2a',      // 深紅字
+                            yellow: '#ffd43b',    // 亮奶黃
+                            cream: '#fff0f3',     // 粉白底
+                            bg: '#ff8787'         // 背景紅
                         } 
                     }
                 }
@@ -29,15 +34,13 @@
     <style>
         body { 
             background-color: #ff8787; 
-            /* 新年喜氣背景：圓點裝飾 */
-            background-image: radial-gradient(#ffffff 20%, transparent 20%), radial-gradient(#ffffff 20%, transparent 20%);
-            background-color: #ff8787;
+            background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
             background-position: 0 0, 10px 10px;
             background-size: 20px 20px;
-            background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px), radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
             color: #495057;
             -webkit-tap-highlight-color: transparent;
             font-family: 'Zen Maru Gothic', sans-serif;
+            font-size: 16px; /* 基礎字體加大 */
         }
         .card { 
             background: #ffffff; 
@@ -49,332 +52,293 @@
         .btn-push:active { transform: translateY(3px); border-bottom: 0px solid transparent; }
         .input-box { background: #fff0f3; border: 2px solid #ffc9c9; border-radius: 1rem; text-align: center; font-weight: 900; transition: all 0.2s; color: #c92a2a; }
         .input-box:focus { border-color: #ff6b6b; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2); }
-        
-        /* 月曆樣式 */
-        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; border-radius: 0.5rem; position: relative; color: #881337; }
-        .has-game { background-color: #fef3c7; color: #b45309; border: 2px solid #fbbf24; }
-        .game-badge { position: absolute; -bottom: 4px; -right: 4px; background: #e11d48; color: white; width: 18px; height: 18px; font-size: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 2px rgba(0,0,0,0.1); z-index: 10; }
-        .today { border: 2px dashed #e11d48; }
-
-        details > summary { list-style: none; cursor: pointer; }
-        details[open] summary ~ * { animation: sweep .3s ease-in-out; }
-        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
         .modal-enter { animation: slideUp 0.3s ease-out forwards; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .big-hand-checkbox:checked + div { background-color: #ff6b6b; color: white; border-color: #ff6b6b; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-10">
 
-    <!-- 讀取遮罩 (僅在上傳時顯示) -->
+    <!-- 讀取遮罩 -->
     <div id="loading-overlay" class="fixed inset-0 z-[60] bg-cute-bg/95 backdrop-blur-sm flex flex-col items-center justify-center hidden">
         <div class="flex gap-3 mb-6 animate-bounce">
-            <div class="w-14 h-20 bg-white rounded-xl border-4 border-cute-yellow shadow-xl flex items-center justify-center transform -rotate-6"><span class="text-4xl">🧧</span></div>
-            <div class="w-14 h-20 bg-white rounded-xl border-4 border-cute-yellow shadow-xl flex items-center justify-center transform rotate-6" style="animation-delay: 0.1s;"><span class="text-4xl">🧨</span></div>
-            <div class="w-14 h-20 bg-white rounded-xl border-4 border-cute-yellow shadow-xl flex items-center justify-center transform -rotate-3" style="animation-delay: 0.2s;"><span class="text-4xl">🀄</span></div>
+            <div class="w-16 h-24 bg-white rounded-xl border-4 border-cute-yellow shadow-xl flex items-center justify-center transform -rotate-6"><span class="text-5xl">🐱</span></div>
+            <div class="w-16 h-24 bg-white rounded-xl border-4 border-cute-yellow shadow-xl flex items-center justify-center transform rotate-6" style="animation-delay: 0.1s;"><span class="text-5xl">🀄</span></div>
+            <div class="w-16 h-24 bg-white rounded-xl border-4 border-cute-yellow shadow-xl flex items-center justify-center transform -rotate-3" style="animation-delay: 0.2s;"><span class="text-5xl">🧧</span></div>
         </div>
-        <h3 class="text-3xl font-black text-white tracking-widest drop-shadow-md">資料上傳中</h3>
-        <p class="text-cute-yellow text-sm font-bold mt-2 animate-pulse bg-white/20 px-4 py-1 rounded-full">請稍候...</p>
+        <h3 class="text-4xl font-black text-white tracking-widest drop-shadow-md">資料同步中</h3>
+        <p id="loading-text" class="text-cute-yellow text-base font-bold mt-2 animate-pulse bg-white/20 px-6 py-2 rounded-full">請稍候...</p>
     </div>
 
     <!-- ==================== View 1: 大廳 (Lobby) ==================== -->
     <div id="view-lobby" class="flex-1 flex flex-col max-w-md mx-auto w-full hidden">
-        
-        <!-- 頂部 Banner (輪播功能) -->
         <div class="relative w-full h-[58vh] overflow-hidden group bg-white shadow-xl z-0" id="banner-carousel">
             
-            <!-- 圖片 1: 預設顯示 (opacity-100) -->
+            <!-- Banner 1 -->
             <div class="banner-slide absolute inset-0 transition-opacity duration-1000 opacity-100">
-                <img src="mahjong_bg.png" 
-                     onerror="this.src='https://images.unsplash.com/photo-1595759604118-a08822588c27?q=80&w=1000&auto=format&fit=crop'" 
-                     class="w-full h-full object-cover transform transition duration-1000" alt="封面1">
+                <img src="mahjong_bg.png" onerror="this.src='https://images.unsplash.com/photo-1595759604118-a08822588c27?q=80&w=1000&auto=format&fit=crop'" class="w-full h-full object-cover transform transition duration-1000">
             </div>
 
-            <!-- 圖片 2: 預設隱藏 (opacity-0) -->
-            <!-- 如果您有第二張圖，請命名為 mahjong_bg2.png -->
+            <!-- Banner 2 -->
             <div class="banner-slide absolute inset-0 transition-opacity duration-1000 opacity-0">
-                <img src="mahjong_bg2.png" 
-                     onerror="this.src='https://images.unsplash.com/photo-1622396636133-74323dc4d905?q=80&w=1000&auto=format&fit=crop'" 
-                     class="w-full h-full object-cover transform transition duration-1000" alt="封面2">
+                <img src="mahjong_bg2.png" onerror="this.src='https://images.unsplash.com/photo-1622396636133-74323dc4d905?q=80&w=1000&auto=format&fit=crop'" class="w-full h-full object-cover transform transition duration-1000">
             </div>
 
-            <!-- 漸層遮罩 (固定在最上層，不隨圖片輪播) -->
             <div class="absolute inset-0 bg-gradient-to-t from-cute-red/80 via-transparent to-transparent flex flex-col justify-end p-8 pb-24 z-10 pointer-events-none">
-                <h1 class="text-5xl font-black text-white drop-shadow-lg mb-1 tracking-wider transform translate-y-2">週皮膚科看診</h1>
-                <p class="text-cute-yellow text-sm font-bold flex items-center gap-2 mt-1 bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full w-fit transform translate-y-2">
-                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-                    <span>週皮膚科</span>
+                <h1 class="text-5xl font-black text-white drop-shadow-lg mb-2 tracking-wider transform translate-y-2">誰是雀后</h1>
+                <p class="text-cute-yellow text-base font-bold flex items-center gap-2 mt-1 bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full w-fit transform translate-y-2">
+                    <span class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></span><span>開打</span>
                 </p>
             </div>
         </div>
-
-        <!-- 1. 開局設定卡片 (上浮交疊設計) -->
-        <!-- -mt-20 負邊距讓卡片往上蓋住圖片，relative z-10 確保它在圖片上面 -->
         <div class="relative z-10 px-4 -mt-20 pb-8">
-            <div class="card p-5 space-y-4 shadow-2xl border-t-8 border-cute-yellow">
+            <div class="card p-6 space-y-5 shadow-2xl border-t-8 border-cute-yellow">
                 <div class="flex justify-between items-end">
-                    <h3 class="font-black text-cute-dark text-lg"><i class="fa-solid fa-users text-cute-red"></i> 誰要發財？</h3>
-                    <div class="text-xs font-bold text-cute-red/60 bg-cute-cream px-3 py-1.5 rounded-xl border border-cute-red/20">底: <input type="number" id="init-chips" value="1000" class="w-10 text-center bg-transparent outline-none text-cute-red font-black"></div>
+                    <h3 class="font-black text-cute-dark text-xl"><i class="fa-solid fa-users text-cute-red"></i> 誰要發財？</h3>
+                    <div class="text-sm font-bold text-cute-red/60 bg-cute-cream px-4 py-2 rounded-xl border border-cute-red/20">底: <input type="number" id="init-chips" value="1000" class="w-12 text-center bg-transparent outline-none text-cute-red font-black text-lg"></div>
                 </div>
-                
-                <div class="grid grid-cols-4 gap-2" id="lobby-players">
-                    <!-- JS 生成 -->
-                </div>
-
-                <!-- 新增玩家按鈕 -->
-                <button onclick="addNewPlayer()" class="w-full py-3 rounded-xl border-2 border-dashed border-cute-red/40 text-cute-red font-black bg-cute-cream/30 hover:bg-cute-cream hover:border-cute-red transition flex items-center justify-center gap-2 group active:scale-95 text-sm">
-                    <span class="w-6 h-6 rounded-full bg-cute-red text-white flex items-center justify-center shadow-md group-hover:rotate-90 transition-transform text-xs">
-                        <i class="fa-solid fa-plus"></i>
-                    </span>
-                    <span>新增夥伴</span>
+                <div class="grid grid-cols-4 gap-3" id="lobby-players"></div>
+                <button onclick="addNewPlayer()" class="w-full py-4 rounded-xl border-2 border-dashed border-cute-red/40 text-cute-red font-black bg-cute-cream/30 hover:bg-cute-cream hover:border-cute-red transition flex items-center justify-center gap-2 group active:scale-95 text-base">
+                    <span class="w-7 h-7 rounded-full bg-cute-red text-white flex items-center justify-center shadow-md group-hover:rotate-90 transition-transform text-sm"><i class="fa-solid fa-plus"></i></span><span>新增夥伴</span>
                 </button>
-
-                <div class="grid grid-cols-5 gap-3 pt-1">
-                    <button onclick="startGame()" class="col-span-3 btn-push bg-cute-red text-white text-xl font-black py-4 rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transform transition hover:-translate-y-1">
-                        <i class="fa-solid fa-play"></i> 開新局
-                    </button>
-                    
-                    <a href="stats.html" class="col-span-2 btn-push bg-cute-yellow text-cute-dark text-base font-black py-4 rounded-2xl shadow-md hover:brightness-105 flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-trophy"></i> 排行
-                    </a>
+                <div class="grid grid-cols-5 gap-3 pt-2">
+                    <button onclick="startGame()" class="col-span-3 btn-push bg-cute-red text-white text-2xl font-black py-5 rounded-2xl shadow-lg hover:brightness-110 flex items-center justify-center gap-2 transform transition hover:-translate-y-1"><i class="fa-solid fa-play"></i> 開新局</button>
+                    <!-- 修改：直接連結到 stats.html -->
+                    <a href="stats.html" class="col-span-2 btn-push bg-cute-yellow text-cute-dark text-lg font-black py-5 rounded-2xl shadow-md hover:brightness-105 flex items-center justify-center gap-1 no-underline"><i class="fa-solid fa-chart-pie"></i> 排行榜</a>
                 </div>
             </div>
-            
-            <p class="text-center text-white/60 text-[10px] font-bold tracking-widest mt-4 drop-shadow-sm">🧧 HAPPY NEW YEAR 2026 🧧</p>
+            <p class="text-center text-white/60 text-xs font-bold tracking-widest mt-6 drop-shadow-sm">🧧 HAPPY NEW YEAR 2026 🧧</p>
         </div>
     </div>
 
-    <!-- ==================== View 2: 牌局進行中 (Game) ==================== -->
-    <div id="view-game" class="flex-1 flex flex-col hidden pb-24">
-        <div class="bg-cute-red text-white px-4 py-3 shadow-md flex justify-between items-center sticky top-0 z-40">
-            <div class="font-bold text-lg flex items-center gap-2">
-                <span class="bg-white text-cute-red px-3 py-0.5 rounded-full text-sm font-black shadow-sm transform -rotate-1">第 <span id="game-round-display">1</span> 醬</span>
-            </div>
-            <button onclick="exitGame()" class="text-xs bg-black/20 px-3 py-1 rounded-full hover:bg-black/30 transition backdrop-blur-sm font-bold">
-                <i class="fa-solid fa-right-from-bracket"></i> 結束
-            </button>
+    <!-- ==================== View 2: 牌局 (Game) ==================== -->
+    <div id="view-game" class="flex-1 flex flex-col hidden pb-28">
+        <div class="bg-cute-red text-white px-5 py-4 shadow-md flex justify-between items-center sticky top-0 z-40">
+            <div class="font-bold text-xl flex items-center gap-2"><span class="bg-white text-cute-red px-4 py-1 rounded-full text-base font-black shadow-sm transform -rotate-1">第 <span id="game-round-display">1</span> 醬</span></div>
+            <button onclick="exitGame()" class="text-sm bg-black/20 px-4 py-2 rounded-full hover:bg-black/30 transition backdrop-blur-sm font-bold"><i class="fa-solid fa-right-from-bracket"></i> 結束</button>
         </div>
-
         <div class="p-4 max-w-md mx-auto w-full space-y-4">
-            <div id="history-container" class="space-y-2"></div>
-
-            <div class="card p-5 relative border-4 border-cute-yellow">
+            <div id="history-container" class="space-y-3"></div>
+            
+            <div class="card p-5 relative border-4 border-cute-yellow bg-white/90">
                 <div class="flex justify-between items-center mb-5">
-                    <div class="bg-cute-yellow text-cute-dark text-xs font-black px-3 py-1 rounded-full shadow-sm transform rotate-1">正在輸入...</div>
-                    <button onclick="openTopUpModal()" class="bg-green-100 text-green-700 text-xs font-black px-3 py-1.5 rounded-full hover:bg-green-200 transition border border-green-200 flex items-center gap-1 shadow-sm">
-                        <i class="fa-solid fa-money-bill-wave"></i> 瑞銀借貸
-                    </button>
+                    <div class="bg-cute-yellow text-cute-dark text-sm font-black px-4 py-1.5 rounded-full shadow-sm transform rotate-1">正在輸入...</div>
+                    <button onclick="openTopUpModal()" class="bg-green-100 text-green-700 text-sm font-black px-4 py-2 rounded-full hover:bg-green-200 transition border border-green-200 flex items-center gap-1 shadow-sm"><i class="fa-solid fa-money-bill-wave"></i> 瑞銀增貸</button>
                 </div>
 
-                <div id="current-rows" class="space-y-5 mt-2"></div>
+                <div id="current-rows" class="space-y-5"></div>
 
-                <hr class="my-5 border-dashed border-cute-red/20">
-
+                <hr class="my-6 border-dashed border-cute-red/20">
                 <div class="flex items-center justify-between">
-                    <div class="text-sm font-black text-cute-dark">
-                        <i class="fa-solid fa-sack-dollar text-cute-yellow text-xl mr-1"></i> 公基金總額
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="fund-diff" class="text-xs font-bold text-gray-400">變動: 0</span>
-                        <input type="number" id="current-fund" placeholder="0" class="input-box w-28 h-14 text-3xl shadow-inner" oninput="calculate()">
-                    </div>
+                    <div class="text-base font-black text-cute-dark"><i class="fa-solid fa-sack-dollar text-cute-yellow text-2xl mr-2"></i> 公基金總額</div>
+                    <div class="flex items-center gap-2"><span id="fund-diff" class="text-sm font-bold text-gray-400">變動: 0</span><input type="number" id="current-fund" placeholder="0" class="input-box w-32 h-14 text-3xl shadow-inner" oninput="calculate()"></div>
                 </div>
             </div>
             
-            <p class="text-center text-white/50 text-xs mt-4 font-bold">
-                <i class="fa-solid fa-hand-point-up"></i> 點擊名字可換人
-            </p>
+            <p class="text-center text-white/50 text-sm mt-4 font-bold"><i class="fa-solid fa-hand-point-up"></i> 點擊名字可換人</p>
         </div>
-
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
-            <div class="max-w-md mx-auto flex gap-3 items-center">
-                <div id="check-sum" class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 font-black text-center text-gray-400 text-xl transition-colors border-2 border-transparent">
-                    <i class="fa-solid fa-scale-balanced mr-1"></i> <span>0</span>
-                </div>
-                <button id="submit-btn" onclick="submitRound()" disabled class="btn-push flex-[2] bg-cute-red text-white font-black py-4 rounded-2xl shadow-sm text-xl flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    上傳本醬 <i class="fa-solid fa-cloud-arrow-up"></i>
-                </button>
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-50">
+            <div class="max-w-md mx-auto flex gap-4 items-center">
+                <div id="check-sum" class="flex-1 bg-gray-100 rounded-2xl py-4 px-4 font-black text-center text-gray-400 text-2xl transition-colors border-2 border-transparent"><i class="fa-solid fa-scale-balanced mr-1"></i> <span>0</span></div>
+                <button id="submit-btn" onclick="submitRound()" disabled class="btn-push flex-[2] bg-cute-red text-white font-black py-4 rounded-2xl shadow-sm text-2xl flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">上傳本醬 <i class="fa-solid fa-cloud-arrow-up"></i></button>
             </div>
         </div>
     </div>
 
-    <!-- 增資 Modal -->
+    <!-- Modals -->
+    <!-- 結束確認 Modal (新增) -->
+    <div id="exit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeExitModal()"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-2xl p-6 border-4 border-cute-red m-4 modal-enter shadow-2xl">
+            <h3 class="text-2xl font-black text-gray-800 mb-4 text-center">⚠️ 結束牌局</h3>
+            <p class="text-gray-600 font-bold text-center mb-6 text-lg">確定要結束目前的牌局嗎？<br><span class="text-cute-red text-sm">(將會清除手機上的暫存紀錄)</span></p>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="closeExitModal()" class="btn-push bg-gray-400 text-white font-black py-4 rounded-xl text-lg shadow-lg">取消</button>
+                <button onclick="confirmExit()" class="btn-push bg-cute-red text-white font-black py-4 rounded-xl text-lg shadow-lg">確定結束</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 瑞銀增貸 Modal -->
     <div id="topup-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeTopUpModal()"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-t-[2.5rem] shadow-2xl modal-enter p-6 pb-10 border-t-8 border-green-400">
-            <h3 class="text-xl font-black text-gray-800 mb-4 text-center">💸 籌碼不夠了？</h3>
-            <div class="space-y-4">
-                <div><label class="block text-xs font-bold text-gray-400 mb-1 pl-2">誰要增貸</label><select id="topup-player" class="w-full bg-gray-100 border-0 rounded-2xl px-4 py-3 font-bold text-gray-700 outline-none focus:ring-2 focus:ring-green-400"></select></div>
-                <div><label class="block text-xs font-bold text-gray-400 mb-1 pl-2">補多少錢</label><input type="number" id="topup-amount" value="1000" class="w-full bg-gray-100 border-0 rounded-2xl px-4 py-3 font-black text-xl text-green-600 outline-none text-center focus:ring-2 focus:ring-green-400"></div>
-                <button onclick="confirmTopUp()" class="btn-push w-full bg-green-500 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-green-600 transition">確定增資</button>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeTopUpModal()"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-t-[2.5rem] p-8 pb-12 border-t-8 border-green-400 modal-enter">
+            <h3 class="text-2xl font-black text-gray-800 mb-6 text-center">💸 資金管理</h3>
+            <div class="space-y-5">
+                <select id="topup-player" class="w-full bg-gray-100 rounded-2xl px-5 py-4 font-bold text-gray-700 outline-none text-xl"></select>
+                <input type="number" id="topup-amount" value="1000" class="w-full bg-gray-100 rounded-2xl px-5 py-4 font-black text-center text-3xl outline-none">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="confirmTopUp(1)" class="btn-push bg-green-500 text-white font-black py-5 rounded-2xl shadow-lg flex items-center justify-center gap-1 text-lg">
+                        <i class="fa-solid fa-plus-circle"></i> 增貸
+                    </button>
+                    <button onclick="confirmTopUp(-1)" class="btn-push bg-blue-400 text-white font-black py-5 rounded-2xl shadow-lg flex items-center justify-center gap-1 text-lg">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> 還款
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 換人/改名 Modal -->
+    <!-- 換人 Modal -->
     <div id="sub-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeSubModal()"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-t-[2.5rem] shadow-2xl modal-enter p-6 pb-10 border-t-8 border-cute-yellow">
-            <h3 class="text-xl font-black text-gray-800 mb-4 text-center">🔄 換人 / 改名</h3>
-            
-            <div class="space-y-5">
-                <!-- 顯示目前是誰 -->
-                <div class="text-center bg-gray-50 rounded-xl p-3">
-                    <span class="text-xs text-gray-400 block mb-1">目前位置玩家</span>
-                    <span id="sub-current-player" class="text-2xl font-black text-cute-red">???</span>
-                </div>
-
-                <!-- 選擇新玩家 -->
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-1 pl-2">替換為</label>
-                    <select id="sub-new-player" class="w-full bg-gray-100 border-0 rounded-2xl px-4 py-3 font-bold text-gray-700 outline-none focus:ring-2 focus:ring-cute-yellow text-lg"></select>
-                </div>
-
-                <!-- 起始籌碼 -->
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 mb-1 pl-2">起始籌碼 (僅換人時生效)</label>
-                    <input type="number" id="sub-base-chips" value="1000" class="w-full bg-gray-100 border-0 rounded-2xl px-4 py-3 font-black text-xl text-gray-600 outline-none text-center focus:ring-2 focus:ring-cute-yellow">
-                </div>
-
-                <!-- 按鈕區 -->
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="confirmSubstitution('reset')" class="btn-push bg-cute-red text-white font-black py-4 rounded-2xl shadow-lg hover:brightness-110 flex flex-col items-center justify-center">
-                        <span class="text-lg">🔀 換人上桌</span>
-                        <span class="text-[10px] opacity-80 font-normal">重置分數 & 籌碼</span>
-                    </button>
-                    <button onclick="confirmSubstitution('keep')" class="btn-push bg-blue-400 text-white font-black py-4 rounded-2xl shadow-lg hover:brightness-110 flex flex-col items-center justify-center">
-                        <span class="text-lg">✏️ 純粹改名</span>
-                        <span class="text-[10px] opacity-80 font-normal">保留所有紀錄</span>
-                    </button>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeSubModal()"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-t-[2.5rem] p-8 pb-12 border-t-8 border-cute-yellow modal-enter">
+            <h3 class="text-2xl font-black text-gray-800 mb-6 text-center">🔄 換人 / 改名</h3>
+            <div class="space-y-6">
+                <div class="text-center bg-gray-50 rounded-xl p-4"><span class="text-sm text-gray-400 block mb-1">目前位置</span><span id="sub-current-player" class="text-3xl font-black text-cute-red">???</span></div>
+                <select id="sub-new-player" class="w-full bg-gray-100 rounded-2xl px-5 py-4 font-bold text-gray-700 outline-none text-2xl"></select>
+                <div><label class="text-sm font-bold text-gray-400 pl-2">起始籌碼</label><input type="number" id="sub-base-chips" value="1000" class="w-full bg-gray-100 rounded-2xl px-5 py-4 font-black text-center text-3xl outline-none"></div>
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <button onclick="confirmSubstitution('reset')" class="btn-push bg-cute-red text-white font-black py-5 rounded-2xl shadow-lg text-lg">🔀 換人上桌</button>
+                    <button onclick="confirmSubstitution('keep')" class="btn-push bg-blue-400 text-white font-black py-5 rounded-2xl shadow-lg text-lg">✏️ 純粹改名</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 大牌選擇器 -->
+    <div id="big-hand-modal" class="hidden fixed inset-0 z-[70] flex items-end justify-center">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeBigHandModal()"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-t-[2.5rem] p-6 pb-12 border-t-8 border-yellow-400 modal-enter flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black text-gray-800 flex items-center gap-2"><span class="text-3xl">🀄</span> 選擇大牌</h3>
+                <span id="big-hand-player-name" class="bg-gray-100 px-4 py-1.5 rounded-full text-sm font-bold text-gray-500">Player</span>
+            </div>
+            <div id="big-types-container" class="grid grid-cols-2 gap-3 overflow-y-auto hide-scrollbar pb-4 flex-1"></div>
+            <button onclick="closeBigHandModal()" class="btn-push w-full bg-yellow-400 text-white font-black py-4 rounded-2xl shadow-lg mt-4 text-xl">完成選擇</button>
         </div>
     </div>
 
     <script>
-        // ★ 你的測試版 URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxWOtO6F00m_OAu0zc1hzQn4F2BieA1ZXAF7Bv_8i5L5KfeN9kV07C_6JFH9DuJ_M4/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyQUvM-ZS2pB4P6ccnfP2C9NnVTuPmHmEqu9nZ9uLv2UpEPF6DAJTKiNucduECm75M/exec';
         
-        const DEFAULT_PLAYERS = ['Jialye', '小T', 'Aki', 'Bigi', 'Jocelyn', '院長'];
-        let allPlayers = [...DEFAULT_PLAYERS]; // 存放所有玩家清單
+        const DEFAULT_PLAYERS = ['Miffy', 'Yuri', 'Penny', 'Bigi', 'Jocelyn', 'Jilye'];
+        let allPlayers = [...DEFAULT_PLAYERS]; 
+        let configBigTypes = ["天胡","八仙過海","字一色","七搶一", "Migi", "大四喜", "小四喜", "清一色", "混一色", "大三元", "小三元", "碰碰胡", "五暗刻", "四暗刻"]; 
 
-        let gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {} };
-        let editingPlayerName = null; // 暫存正在編輯的玩家
+        let gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {}, extras: {} };
+        
+        let editingPlayerName = null; 
+        let currentBigHandPlayer = null; 
 
+        // --- Init ---
         async function init() {
-            // 載入遊戲狀態
             const savedState = localStorage.getItem('mj_game_state');
-            
-            // 載入玩家清單
             const savedPlayers = localStorage.getItem('mj_all_players');
-            if (savedPlayers) {
-                allPlayers = JSON.parse(savedPlayers);
-            }
+            const savedBigTypes = localStorage.getItem('mj_big_types');
+
+            if (savedPlayers) allPlayers = JSON.parse(savedPlayers);
+            if (savedBigTypes) configBigTypes = JSON.parse(savedBigTypes);
 
             if (savedState) {
                 gameState = JSON.parse(savedState);
                 if (!gameState.topUps) gameState.topUps = {};
-                if (gameState.active) { renderGameView(); return; }
-            }
-            showLobby();
-            startBannerCarousel(); // 啟動 Banner 輪播
-        }
-
-        // ================= Banner Carousel =================
-        function startBannerCarousel() {
-            const slides = document.querySelectorAll('.banner-slide');
-            if (slides.length < 2) return;
-            
-            let currentIndex = 0;
-            
-            setInterval(() => {
-                // 目前這張 -> 隱藏
-                slides[currentIndex].classList.remove('opacity-100');
-                slides[currentIndex].classList.add('opacity-0');
+                if (!gameState.extras) gameState.extras = {};
                 
-                // 下一張
-                currentIndex = (currentIndex + 1) % slides.length;
-                
-                // 下一張 -> 顯示
-                slides[currentIndex].classList.remove('opacity-0');
-                slides[currentIndex].classList.add('opacity-100');
-            }, 4000); // 5000ms = 5秒切換一次
-        }
-
-        function showLobby() {
-            document.getElementById('view-lobby').classList.remove('hidden');
-            document.getElementById('view-game').classList.add('hidden');
-            renderLobbyPlayers();
-        }
-
-        // 新增玩家功能
-        function addNewPlayer() {
-            const newName = prompt("請輸入新玩家的名字：");
-            if (newName && newName.trim() !== "") {
-                const name = newName.trim();
-                if (allPlayers.includes(name)) {
-                    alert("這個名字已經在清單裡囉！");
-                    return;
+                if (!gameState.sessionDate) {
+                    const d = new Date();
+                    gameState.sessionDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                 }
-                allPlayers.push(name);
-                localStorage.setItem('mj_all_players', JSON.stringify(allPlayers));
-                renderLobbyPlayers(); // 重新渲染下拉選單
-                alert(`歡迎 ${name} 加入！`);
+
+                if (gameState.active) { renderGameView(); }
+            } else {
+                showLobby();
+            }
+            
+            startBannerCarousel();
+            fetchConfig(); 
+        }
+
+        async function fetchConfig() {
+            try {
+                const res = await fetch(API_URL);
+                const json = await res.json();
+                
+                if (json.status === 'success') {
+                    if (json.bigTypes && Array.isArray(json.bigTypes)) {
+                        configBigTypes = json.bigTypes;
+                        localStorage.setItem('mj_big_types', JSON.stringify(configBigTypes));
+                    }
+                }
+            } catch(e) { console.log("Fetch config failed, using cache"); }
+        }
+
+        // --- Game Logic ---
+        function ensureExtras(player) {
+            if (!gameState.extras[player]) {
+                gameState.extras[player] = { penalty: 0, foul: 0, continuance: 0, bigHands: [] };
             }
         }
 
-        function renderLobbyPlayers() {
-            const container = document.getElementById('lobby-players');
-            // 這裡確保 lastPlayers 裡的名字如果不在 allPlayers 裡，還是能顯示（雖然正常來說應該在）
-            let lastPlayers = JSON.parse(localStorage.getItem('mj_last_players')) || DEFAULT_PLAYERS.slice(0, 4);
-            
-            container.innerHTML = Array(4).fill(0).map((_, i) => {
-                const currentPlayer = lastPlayers[i] || allPlayers[0]; // 防呆
-                
-                // 產生選項，使用 allPlayers
-                const options = allPlayers.map(p => `<option value="${p}" ${p === currentPlayer ? 'selected' : ''}>${p}</option>`).join('');
-                
-                return `
-                <div class="relative group">
-                    <div class="w-full aspect-square bg-cute-cream rounded-2xl border-2 border-cute-red/20 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-cute-red transition shadow-sm active:scale-95">
-                        <div class="w-10 h-10 rounded-full bg-cute-red text-white flex items-center justify-center text-lg font-black mb-1 shadow-md border-2 border-white">
-                            ${currentPlayer.charAt(0)}
-                        </div>
-                        <select onchange="updateLobbyPlayer(this, ${i})" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full text-center">${options}</select>
-                        <span class="text-xs font-bold text-cute-dark pointer-events-none player-name-display">${currentPlayer}</span>
-                        <i class="fa-solid fa-caret-down text-[10px] text-cute-red/30 absolute bottom-1"></i>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-        function updateLobbyPlayer(select, index) {
-            const displayEl = select.parentElement.querySelector('.player-name-display');
-            displayEl.innerText = select.value;
-            const avatarEl = select.parentElement.querySelector('div');
-            avatarEl.innerText = select.value.charAt(0);
-            let lastPlayers = JSON.parse(localStorage.getItem('mj_last_players')) || DEFAULT_PLAYERS.slice(0, 4);
-            lastPlayers[index] = select.value;
-            localStorage.setItem('mj_last_players', JSON.stringify(lastPlayers));
+        function cyclePenalty(player) {
+            ensureExtras(player);
+            let val = gameState.extras[player].penalty;
+            val = (val + 1) > 2 ? 0 : val + 1; 
+            gameState.extras[player].penalty = val;
+            saveState(); renderGameView();
         }
 
-        // ================= 遊戲核心邏輯 =================
-        function startGame() {
-            const selects = document.querySelectorAll('#lobby-players select');
-            const pList = Array.from(selects).map(s => s.value);
-            if (new Set(pList).size !== 4) { alert("玩家不能重複喔！"); return; }
-            const initChips = parseInt(document.getElementById('init-chips').value) || 1000;
+        function cycleFoul(player) {
+            ensureExtras(player);
+            let val = gameState.extras[player].foul;
+            val = (val + 1) > 1 ? 0 : val + 1; 
+            gameState.extras[player].foul = val;
+            saveState(); renderGameView();
+        }
 
-            gameState.active = true;
-            gameState.round = 1; 
-            gameState.players = pList;
-            gameState.baseChips = {};
-            gameState.topUps = {}; 
-            pList.forEach(p => gameState.baseChips[p] = initChips);
-            gameState.baseFund = 0;
-            gameState.history = [];
-
-            localStorage.setItem('mj_last_players', JSON.stringify(pList));
+        function updateContinuance(player, input) {
+            ensureExtras(player);
+            let val = parseInt(input.value);
+            if(isNaN(val) || val < 0) val = 0;
+            gameState.extras[player].continuance = val;
             saveState();
-            renderGameView();
+        }
+
+        function openBigHandModal(player) {
+            currentBigHandPlayer = player;
+            ensureExtras(player);
+            document.getElementById('big-hand-player-name').innerText = player;
+            
+            const container = document.getElementById('big-types-container');
+            const currentHands = gameState.extras[player].bigHands || [];
+            
+            if(configBigTypes.length > 0) {
+                container.innerHTML = configBigTypes.map(type => {
+                    const checked = currentHands.includes(type) ? 'checked' : '';
+                    return `
+                        <label class="cursor-pointer relative h-full">
+                            <input type="checkbox" class="big-hand-checkbox hidden" value="${type}" ${checked} onchange="toggleBigHand(this)">
+                            <div class="bg-white border-2 border-gray-100 rounded-xl px-2 py-4 text-base font-bold text-gray-500 text-center transition hover:bg-gray-50 select-none h-full flex items-center justify-center">
+                                ${type}
+                            </div>
+                        </label>
+                    `;
+                }).join('');
+            } else {
+                container.innerHTML = `<div class="text-sm text-gray-400 col-span-2 text-center">無大牌資料</div>`;
+            }
+            document.getElementById('big-hand-modal').classList.remove('hidden');
+        }
+
+        function toggleBigHand(checkbox) {
+            if(!currentBigHandPlayer) return;
+            const val = checkbox.value;
+            let hands = gameState.extras[currentBigHandPlayer].bigHands;
+            if(checkbox.checked) {
+                if(!hands.includes(val)) hands.push(val);
+            } else {
+                hands = hands.filter(x => x !== val);
+            }
+            gameState.extras[currentBigHandPlayer].bigHands = hands;
+            saveState();
+            renderGameView(); 
+        }
+
+        function closeBigHandModal() {
+            document.getElementById('big-hand-modal').classList.add('hidden');
+            currentBigHandPlayer = null;
         }
 
         function renderGameView() {
@@ -388,245 +352,337 @@
                 const lastVal = gameState.baseChips[p];
                 const topUpVal = gameState.topUps[p] || 0;
                 const effectiveBase = lastVal + topUpVal;
-                const topUpBadge = topUpVal > 0 ? `<span onclick="modifyTopUp('${p}')" class="ml-1 text-[10px] text-green-600 bg-green-100 px-1 rounded font-bold cursor-pointer hover:bg-green-200 border border-transparent hover:border-green-300">💰+${topUpVal}</span>` : '';
+                // 如果 topUpVal 是 0 (還清了)，就不顯示標籤
+                const topUpBadge = topUpVal !== 0 
+                    ? `<span class="ml-1 text-xs ${topUpVal > 0 ? 'text-green-600 bg-green-100' : 'text-blue-600 bg-blue-100'} px-1.5 py-0.5 rounded font-bold">💰${topUpVal > 0 ? '+' : ''}${topUpVal}</span>` 
+                    : '';
+                
+                const ex = gameState.extras[p] || { penalty: 0, foul: 0, continuance: 0, bigHands: [] };
+                
+                const penClass = ex.penalty > 0 ? 'bg-orange-500 text-white border-orange-600' : 'bg-gray-100 text-gray-400 border-gray-200';
+                const foulClass = ex.foul > 0 ? 'bg-red-500 text-white border-red-600' : 'bg-gray-100 text-gray-400 border-gray-200';
+                const bigClass = ex.bigHands.length > 0 ? 'bg-yellow-400 text-white border-yellow-500' : 'bg-gray-100 text-gray-400 border-gray-200';
+                
+                const bigHandList = ex.bigHands.length > 0 
+                    ? `<div class="col-span-4 flex flex-wrap gap-1 mt-1">
+                        ${ex.bigHands.map(h => `<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-md font-bold shadow-sm">🀄 ${h}</span>`).join('')}
+                       </div>` 
+                    : '';
 
-                // ★★★ 這裡也補上可愛的頭像 ★★★
                 return `
-                <div class="flex items-center justify-between player-row" data-name="${p}">
-                    <div class="flex-1 flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-cute-yellow text-cute-dark flex items-center justify-center font-black text-xl border-4 border-white shadow-sm shrink-0">
-                            ${p.charAt(0)}
-                        </div>
-                        <div>
-                            <div onclick="openSubModal('${p}')" class="font-black text-lg text-cute-dark cursor-pointer hover:text-cute-red transition flex items-center gap-2">
-                                ${p} <i class="fa-solid fa-pen-to-square text-xs text-gray-300"></i>
+                <div class="bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm transition hover:border-gray-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex-1 flex items-center gap-3 overflow-hidden">
+                            <div class="w-14 h-14 rounded-full bg-cute-yellow text-cute-dark flex items-center justify-center font-black text-2xl border-4 border-white shadow-sm shrink-0">
+                                ${p.charAt(0)}
                             </div>
-                            <div class="text-xs text-cute-dark/50 font-bold flex items-center">上局: ${lastVal} ${topUpBadge}</div>
+                            <div class="min-w-0">
+                                <div onclick="openSubModal('${p}')" class="font-black text-xl text-cute-dark cursor-pointer hover:text-cute-red transition flex items-center gap-1 truncate">
+                                    ${p} 
+                                </div>
+                                <div class="flex items-center gap-1 mt-0.5">
+                                    <span class="text-sm text-cute-dark/50 font-bold">底:${lastVal}</span>
+                                    ${topUpBadge}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 pl-2">
+                            <div class="text-base font-bold text-gray-400 w-8 text-right score-diff">0</div>
+                            <input type="number" class="chip-input input-box w-24 h-14 text-2xl shadow-inner border-2 border-gray-100 focus:border-cute-red" 
+                                value="${effectiveBase}" placeholder="${effectiveBase}" oninput="calculate()" onfocus="this.select()">
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-sm font-bold text-gray-400 w-12 text-right score-diff">0</div>
-                        <input type="number" class="chip-input input-box w-24 h-12 text-2xl" 
-                               value="${effectiveBase}" placeholder="${effectiveBase}" oninput="calculate()" onfocus="this.select()">
+
+                    <div class="grid grid-cols-4 gap-2">
+                        <div class="relative">
+                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400 pointer-events-none">連</span>
+                            <input type="number" value="${ex.continuance || ''}" placeholder="0" class="w-full bg-gray-50 border-2 border-gray-100 rounded-xl py-3 pl-7 pr-1 text-base font-black text-purple-600 outline-none focus:border-purple-300 text-center" oninput="updateContinuance('${p}', this)">
+                        </div>
+                        <button onclick="cyclePenalty('${p}')" class="w-full py-3 rounded-xl border-2 text-sm font-black shadow-sm active:scale-95 transition flex items-center justify-center gap-1 ${penClass}">
+                            <span>相</span><span>${ex.penalty > 0 ? ex.penalty : ''}</span>
+                        </button>
+                        <button onclick="cycleFoul('${p}')" class="w-full py-3 rounded-xl border-2 text-sm font-black shadow-sm active:scale-95 transition flex items-center justify-center gap-1 ${foulClass}">
+                            <span>詐</span><span>${ex.foul > 0 ? ex.foul : ''}</span>
+                        </button>
+                        <button onclick="openBigHandModal('${p}')" class="w-full py-3 rounded-xl border-2 text-sm font-black shadow-sm active:scale-95 transition flex items-center justify-center gap-1 ${bigClass}">
+                            <span>🀄</span><span>${ex.bigHands.length > 0 ? ex.bigHands.length : ''}</span>
+                        </button>
+                        ${bigHandList}
                     </div>
                 </div>`;
             }).join('');
+            
             document.getElementById('current-fund').value = gameState.baseFund;
             calculate();
         }
 
-        // === 換人/改名 Modal 邏輯 ===
-        function openSubModal(currentPlayerName) {
-            editingPlayerName = currentPlayerName;
-            document.getElementById('sub-current-player').innerText = currentPlayerName;
-            
-            // 產生下拉選單：排除掉目前「正在桌上」的其他玩家 (避免重複選人)
-            const activePlayers = gameState.players.filter(p => p !== currentPlayerName);
-            const availablePlayers = allPlayers.filter(p => !activePlayers.includes(p));
-
-            const select = document.getElementById('sub-new-player');
-            select.innerHTML = availablePlayers.map(p => 
-                `<option value="${p}" ${p === currentPlayerName ? 'selected' : ''}>${p}</option>`
-            ).join('');
-
-            // 如果選單裡沒有目前這個人 (例如是手動輸入的)，就把他加回去選單並選取
-            if (!availablePlayers.includes(currentPlayerName)) {
-                const opt = document.createElement('option');
-                opt.value = currentPlayerName;
-                opt.text = currentPlayerName;
-                opt.selected = true;
-                select.add(opt);
-            }
-
-            document.getElementById('sub-modal').classList.remove('hidden');
-        }
-
-        function closeSubModal() {
-            document.getElementById('sub-modal').classList.add('hidden');
-            editingPlayerName = null;
-        }
-
-        function confirmSubstitution(mode) {
-            const oldName = editingPlayerName;
-            const newName = document.getElementById('sub-new-player').value;
-            const newBaseChips = parseInt(document.getElementById('sub-base-chips').value) || 1000;
-
-            if (!newName) return;
-            
-            // 找出位置
-            const index = gameState.players.indexOf(oldName);
-            if (index === -1) return;
-
-            // 更新名字
-            gameState.players[index] = newName;
-
-            if (mode === 'reset') {
-                // 模式：換人上桌 (重置分數)
-                delete gameState.baseChips[oldName];
-                gameState.baseChips[newName] = newBaseChips;
-                
-                // 移除舊的增資，換新人就是重新開始
-                if (gameState.topUps[oldName]) {
-                    delete gameState.topUps[oldName];
-                }
-            } else {
-                // 模式：純粹改名 (繼承分數)
-                gameState.baseChips[newName] = gameState.baseChips[oldName];
-                delete gameState.baseChips[oldName];
-                
-                // 繼承增資
-                if (gameState.topUps[oldName]) {
-                    gameState.topUps[newName] = gameState.topUps[oldName];
-                    delete gameState.topUps[oldName];
-                }
-            }
-
-            // 儲存並更新畫面
-            localStorage.setItem('mj_last_players', JSON.stringify(gameState.players));
-            saveState();
-            renderGameView();
-            closeSubModal();
-        }
-
-        function openTopUpModal() {
-            const select = document.getElementById('topup-player');
-            select.innerHTML = gameState.players.map(p => `<option value="${p}">${p}</option>`).join('');
-            document.getElementById('topup-modal').classList.remove('hidden');
-        }
-        function closeTopUpModal() { document.getElementById('topup-modal').classList.add('hidden'); }
-        function confirmTopUp() {
-            const player = document.getElementById('topup-player').value;
-            const amount = parseInt(document.getElementById('topup-amount').value) || 0;
-            if (amount <= 0) return;
-            if (!gameState.topUps[player]) gameState.topUps[player] = 0;
-            gameState.topUps[player] += amount;
-            saveState();
-            closeTopUpModal();
-            renderGameView(); 
-        }
-        function modifyTopUp(player) {
-            const current = gameState.topUps[player] || 0;
-            if (current === 0) return;
-            const input = prompt(`修改 ${player} 的增資金額\n\n目前增資: ${current}\n\n● 輸入負數可減少 (例如 -500)\n● 輸入 0 可完全移除`, "0");
-            if (input === null) return; 
-            const val = parseInt(input);
-            if (!isNaN(val)) {
-                if (val === 0) {
-                    if (confirm(`確定要將 ${player} 的增資 (${current}) 全部移除嗎？`)) { gameState.topUps[player] = 0; }
-                } else {
-                    gameState.topUps[player] += val;
-                    if (gameState.topUps[player] < 0) gameState.topUps[player] = 0;
-                }
-                saveState();
-                renderGameView();
-            } else { alert("請輸入有效的數字"); }
-        }
-
-        function calculate() {
-            const rows = document.querySelectorAll('.player-row');
-            let totalScoreDiff = 0;
-            rows.forEach(row => {
-                const name = row.dataset.name;
-                const base = gameState.baseChips[name];
-                const topUp = gameState.topUps[name] || 0;
-                const effectiveBase = base + topUp; 
-                const currentInput = parseInt(row.querySelector('.chip-input').value);
-                if (isNaN(currentInput)) { row.querySelector('.score-diff').innerText = '...'; return; }
-                const diff = currentInput - effectiveBase;
-                totalScoreDiff += diff;
-                const diffEl = row.querySelector('.score-diff');
-                diffEl.innerText = diff > 0 ? `+${diff}` : diff;
-                diffEl.className = `text-sm font-bold w-12 text-right score-diff ${diff > 0 ? 'text-cute-red' : (diff < 0 ? 'text-green-600' : 'text-gray-300')}`;
-            });
-            const fundInput = document.getElementById('current-fund');
-            const currentFund = parseInt(fundInput.value) || 0;
-            const fundDiff = currentFund - gameState.baseFund;
-            totalScoreDiff += fundDiff;
-            document.getElementById('fund-diff').innerText = `變動: ${fundDiff > 0 ? '+' : ''}${fundDiff}`;
-            const checkSumEl = document.getElementById('check-sum');
-            const submitBtn = document.getElementById('submit-btn');
-            checkSumEl.innerHTML = totalScoreDiff === 0 ? `<i class="fa-solid fa-check text-green-500"></i> <span class="text-green-600">帳目平衡</span>` : `<i class="fa-solid fa-triangle-exclamation text-cute-red"></i> <span class="text-cute-red">${totalScoreDiff > 0 ? '+' : ''}${totalScoreDiff}</span>`;
-            checkSumEl.className = `flex-1 rounded-2xl py-3 px-4 font-black text-center text-lg transition-colors border-2 ${totalScoreDiff === 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-cute-red'}`;
-            const allFilled = Array.from(document.querySelectorAll('.chip-input')).every(i => i.value !== '');
-            if (totalScoreDiff === 0 && allFilled) {
-                submitBtn.disabled = false;
-                submitBtn.className = "btn-push flex-[2] bg-cute-red text-white font-black py-3 rounded-2xl shadow-lg hover:brightness-110 transition text-lg flex items-center justify-center gap-2 cursor-pointer border-b-4 border-yellow-700 active:border-b-0 active:translate-y-1";
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.className = "flex-[2] bg-gray-300 text-white font-black py-3 rounded-2xl shadow-sm text-lg flex items-center justify-center gap-2 cursor-not-allowed";
-            }
-        }
-
         async function submitRound() {
             const btn = document.getElementById('submit-btn');
-            const originalText = `上傳本醬 <i class="fa-solid fa-cloud-arrow-up"></i>`;
-            btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 上傳中...`;
+            const originalText = btn.innerHTML;
+            btn.disabled = true; 
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
             document.getElementById('loading-overlay').classList.remove('hidden');
-            const rows = document.querySelectorAll('.player-row');
+            document.getElementById('loading-text').innerText = "正在上傳戰績...";
+
+            const rows = document.querySelectorAll('.chip-input');
             const payload = [];
             const nextBaseChips = {}; 
-            rows.forEach(row => {
-                const name = row.dataset.name;
+            
+            gameState.players.forEach((name, idx) => {
                 const base = gameState.baseChips[name];
                 const topUp = gameState.topUps[name] || 0;
                 const effectiveBase = base + topUp; 
-                const current = parseInt(row.querySelector('.chip-input').value) || 0;
-                const score = current - effectiveBase; 
-                nextBaseChips[name] = current; 
+                const inputVal = parseInt(rows[idx].value) || 0;
+                const score = inputVal - effectiveBase; 
+                nextBaseChips[name] = inputVal; 
+                
+                const e = gameState.extras[name] || { penalty: 0, foul: 0, continuance: 0, bigHands: [] };
+                
                 payload.push({ 
                     name: name, 
                     score: score, 
-                    continuance: 0, 
-                    penalty: 0, 
-                    foul: 0, 
-                    bigCount: 0, 
-                    bigNames: "",
-                    loan: topUp  // <--- 加上這行！這就是傳給 J 欄的資料
+                    topUp: topUp,
+                    continuance: e.continuance, 
+                    penalty: e.penalty, 
+                    foul: e.foul, 
+                    bigCount: e.bigHands.length, 
+                    bigNames: e.bigHands.join(',') 
                 });
             });
+
             const currentFund = parseInt(document.getElementById('current-fund').value) || 0;
             const fundDiff = currentFund - gameState.baseFund;
+
             try {
-                const d = new Date();
-                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const dateStr = gameState.sessionDate || new Date().toISOString().split('T')[0];
+                
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({ date: dateStr, round: gameState.round, fund: fundDiff, data: payload })
                 });
+
                 gameState.history.push({ round: gameState.round, scores: payload, fund: fundDiff });
                 gameState.round += 1;
                 gameState.baseChips = nextBaseChips;
                 gameState.baseFund = currentFund;
-                gameState.topUps = {}; 
+                gameState.topUps = {}; // 清空增貸紀錄
+                gameState.extras = {}; 
                 saveState();
                 renderGameView();
-                document.getElementById('loading-overlay').classList.add('hidden');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (e) {
-                alert("上傳失敗，請檢查網路");
-                btn.disabled = false;
+            } catch (e) { 
+                console.error(e);
+                alert("上傳失敗，請檢查網路"); 
+            } finally {
                 btn.innerHTML = originalText;
+                btn.disabled = false;
                 document.getElementById('loading-overlay').classList.add('hidden');
             }
         }
 
-        function renderHistory() {
-            const container = document.getElementById('history-container');
-            if (gameState.history.length === 0) { container.innerHTML = ''; return; }
-            container.innerHTML = gameState.history.map((h, i) => {
-                const winner = h.scores.reduce((prev, curr) => (prev.score > curr.score) ? prev : curr);
-                const winnerText = winner.score > 0 ? `${winner.name} +${winner.score}` : '平局';
-                return `<details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group"><summary class="flex justify-between items-center p-3 hover:bg-gray-50 transition select-none"><div class="font-bold text-gray-700 text-sm"><span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs mr-2">第 ${h.round} 醬</span><span class="text-cute-red">${winnerText}</span></div><i class="fa-solid fa-chevron-down text-gray-300 group-open:rotate-180 transition-transform"></i></summary><div class="p-3 bg-cute-cream/50 border-t border-gray-100 text-sm grid grid-cols-2 gap-2">${h.scores.map(s => `<div class="flex justify-between"><span class="text-gray-600">${s.name}</span><span class="font-bold ${s.score >= 0 ? 'text-cute-red' : 'text-green-600'}">${s.score > 0 ? '+' : ''}${s.score}</span></div>`).join('')}<div class="flex justify-between border-t border-gray-200 pt-1 mt-1 col-span-2"><span class="text-gray-500">公基金變動</span><span class="font-bold text-cute-yellow">${h.fund > 0 ? '+' : ''}${h.fund}</span></div></div></details>`;
-            }).reverse().join('');
+        // --- Banner & Views ---
+        function startBannerCarousel() {
+            const slides = document.querySelectorAll('.banner-slide');
+            if (slides.length < 2) return;
+            let currentIndex = 0;
+            setInterval(() => {
+                slides[currentIndex].classList.replace('opacity-100', 'opacity-0');
+                currentIndex = (currentIndex + 1) % slides.length;
+                slides[currentIndex].classList.replace('opacity-0', 'opacity-100');
+            }, 3000);
         }
 
+        function showLobby() {
+            document.getElementById('view-lobby').classList.remove('hidden');
+            document.getElementById('view-game').classList.add('hidden');
+            renderLobbyPlayers();
+        }
+
+        // --- Lobby Funcs ---
+        function addNewPlayer() {
+            const newName = prompt("請輸入新玩家的名字：");
+            if (newName && newName.trim() !== "") {
+                if (allPlayers.includes(newName)) { alert("已存在"); return; }
+                allPlayers.push(newName);
+                localStorage.setItem('mj_all_players', JSON.stringify(allPlayers));
+                renderLobbyPlayers();
+            }
+        }
+        function renderLobbyPlayers() {
+            const container = document.getElementById('lobby-players');
+            let lastPlayers = JSON.parse(localStorage.getItem('mj_last_players')) || DEFAULT_PLAYERS.slice(0, 4);
+            container.innerHTML = Array(4).fill(0).map((_, i) => {
+                const currentPlayer = lastPlayers[i] || allPlayers[0];
+                const options = allPlayers.map(p => `<option value="${p}" ${p === currentPlayer ? 'selected' : ''}>${p}</option>`).join('');
+                return `<div class="relative group"><div class="w-full aspect-square bg-cute-cream rounded-2xl border-2 border-cute-red/20 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-cute-red transition shadow-sm active:scale-95"><div class="w-12 h-12 rounded-full bg-cute-red text-white flex items-center justify-center text-xl font-black mb-1 shadow-md border-2 border-white">${currentPlayer.charAt(0)}</div><select onchange="updateLobbyPlayer(this, ${i})" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full text-center">${options}</select><span class="text-sm font-bold text-cute-dark pointer-events-none player-name-display">${currentPlayer}</span><i class="fa-solid fa-caret-down text-[10px] text-cute-red/30 absolute bottom-1"></i></div></div>`;
+            }).join('');
+        }
+        function updateLobbyPlayer(select, index) {
+            const displayEl = select.parentElement.querySelector('.player-name-display');
+            displayEl.innerText = select.value;
+            select.parentElement.querySelector('div').innerText = select.value.charAt(0);
+            let lastPlayers = JSON.parse(localStorage.getItem('mj_last_players')) || DEFAULT_PLAYERS.slice(0, 4);
+            lastPlayers[index] = select.value;
+            localStorage.setItem('mj_last_players', JSON.stringify(lastPlayers));
+        }
+
+        // --- Core Helpers ---
+    function calculate() {
+                const inputs = document.querySelectorAll('.chip-input');
+                let totalScoreDiff = 0;
+    
+                // 1. 計算每個人的輸贏
+                inputs.forEach((input, idx) => {
+                    const name = gameState.players[idx];
+                    const base = gameState.baseChips[name];
+                    const topUp = gameState.topUps[name] || 0;
+                    const effectiveBase = base + topUp;
+                    const val = parseInt(input.value);
+                    const diffEl = input.previousElementSibling;
+                    
+                    if (isNaN(val)) { diffEl.innerText = "..."; return; }
+                    
+                    const diff = val - effectiveBase;
+                    totalScoreDiff += diff;
+                    
+                    diffEl.innerText = diff > 0 ? `+${diff}` : diff;
+                    diffEl.className = `text-base font-bold w-8 text-right score-diff ${diff > 0 ? 'text-cute-red' : (diff < 0 ? 'text-green-600' : 'text-gray-300')}`;
+                });
+    
+                // 2. 加入公基金變動
+                const fVal = parseInt(document.getElementById('current-fund').value) || 0;
+                totalScoreDiff += (fVal - gameState.baseFund);
+                document.getElementById('fund-diff').innerText = `變動: ${(fVal - gameState.baseFund)}`;
+    
+                // 3. 顯示結果 (修改這邊)
+                const checkEl = document.getElementById('check-sum');
+                const subBtn = document.getElementById('submit-btn');
+    
+                if (totalScoreDiff === 0) {
+                    // 平衡時顯示綠色勾勾
+                    checkEl.innerHTML = `<i class="fa-solid fa-check text-green-500"></i>`;
+                    subBtn.disabled = false; 
+                    subBtn.className = "btn-push flex-[2] bg-cute-red text-white font-black py-4 rounded-2xl shadow-lg transition text-2xl"; 
+                } else {
+                    // 不平衡時，顯示中文提示
+                    const msg = totalScoreDiff > 0 
+                        ? `有人多算 ${totalScoreDiff}` 
+                        : `有人少算 ${Math.abs(totalScoreDiff)}`;
+    
+                    // 使用 text-base 稍微縮小字體，確保手機能完整顯示
+                    checkEl.innerHTML = `<span class="text-cute-red font-black text-lg">${msg}</span>`;
+                    
+                    subBtn.disabled = true; 
+                    subBtn.className = "flex-[2] bg-gray-300 text-white font-black py-4 rounded-2xl shadow-sm cursor-not-allowed text-2xl"; 
+                }
+            }
+    
+            function renderHistory() {
+                const container = document.getElementById('history-container');
+                if (gameState.history.length === 0) { container.innerHTML = ''; return; }
+                container.innerHTML = gameState.history.map(h => {
+                    const winner = h.scores.reduce((p, c) => (p.score > c.score) ? p : c);
+                    const winnerText = winner.score > 0 ? `${winner.name} +${winner.score}` : '平局';
+                    return `<details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group"><summary class="flex justify-between items-center p-3 hover:bg-gray-50 transition select-none"><div class="font-bold text-gray-700 text-base"><span class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-sm mr-2">第 ${h.round} 醬</span><span class="text-cute-red">${winnerText}</span></div><i class="fa-solid fa-chevron-down text-gray-300 group-open:rotate-180 transition-transform text-lg"></i></summary><div class="p-4 bg-cute-cream/50 border-t border-gray-100 text-base grid grid-cols-2 gap-2">${h.scores.map(s => `<div class="flex justify-between"><span class="text-gray-600">${s.name}</span><span class="font-bold ${s.score >= 0 ? 'text-cute-red' : 'text-green-600'}">${s.score > 0 ? '+' : ''}${s.score}</span></div>`).join('')}<div class="flex justify-between border-t border-gray-200 pt-2 mt-1 col-span-2"><span class="text-gray-500">公基金變動</span><span class="font-bold text-cute-yellow">${h.fund > 0 ? '+' : ''}${h.fund}</span></div></div></details>`;
+                }).reverse().join('');
+            }
+
         function saveState() { localStorage.setItem('mj_game_state', JSON.stringify(gameState)); }
-        function exitGame() { if(confirm('確定要結束目前的牌局嗎？\n(將會清除目前的手機紀錄回到大廳)')) { localStorage.removeItem('mj_game_state'); location.reload(); } }
+        
+        // --- Modals Logic (TopUp, Sub, Exit) ---
+        function openTopUpModal() {
+            const s = document.getElementById('topup-player');
+            s.innerHTML = gameState.players.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById('topup-modal').classList.remove('hidden');
+        }
+        function closeTopUpModal() { document.getElementById('topup-modal').classList.add('hidden'); }
+        
+        // 修改：confirmTopUp 支援增資(1) 與 還款(-1)
+        function confirmTopUp(multiplier) {
+            const p = document.getElementById('topup-player').value;
+            const amt = parseInt(document.getElementById('topup-amount').value) || 0;
+            if(!gameState.topUps[p]) gameState.topUps[p] = 0;
+            
+            // 乘上 multiplier (1 或 -1)
+            gameState.topUps[p] += (amt * multiplier);
+            
+            saveState(); renderGameView(); closeTopUpModal();
+        }
+        
+        function openSubModal(p) {
+            editingPlayerName = p;
+            document.getElementById('sub-current-player').innerText = p;
+            const active = gameState.players.filter(x => x !== p);
+            const opts = allPlayers.filter(x => !active.includes(x));
+            const sel = document.getElementById('sub-new-player');
+            sel.innerHTML = opts.map(x => `<option value="${x}">${x}</option>`).join('');
+            if(!opts.includes(p)) sel.innerHTML += `<option value="${p}" selected>${p}</option>`;
+            document.getElementById('sub-modal').classList.remove('hidden');
+        }
+        function closeSubModal() { document.getElementById('sub-modal').classList.add('hidden'); }
+        function confirmSubstitution(mode) {
+            const oldN = editingPlayerName;
+            const newN = document.getElementById('sub-new-player').value;
+            const chips = parseInt(document.getElementById('sub-base-chips').value) || 1000;
+            const idx = gameState.players.indexOf(oldN);
+            gameState.players[idx] = newN;
+            if(mode === 'reset') {
+                delete gameState.baseChips[oldN]; gameState.baseChips[newN] = chips;
+                delete gameState.topUps[oldN]; delete gameState.extras[oldN];
+            } else {
+                gameState.baseChips[newN] = gameState.baseChips[oldN]; delete gameState.baseChips[oldN];
+                if(gameState.topUps[oldN]) { gameState.topUps[newN] = gameState.topUps[oldN]; delete gameState.topUps[oldN]; }
+                if(gameState.extras[oldN]) { gameState.extras[newN] = gameState.extras[oldN]; delete gameState.extras[oldN]; }
+            }
+            localStorage.setItem('mj_last_players', JSON.stringify(gameState.players));
+            saveState(); renderGameView(); closeSubModal();
+        }
+
+        function startGame() {
+            const selects = document.querySelectorAll('#lobby-players select');
+            const pList = Array.from(selects).map(s => s.value);
+            if (new Set(pList).size !== 4) { alert("玩家不能重複喔！"); return; }
+            const initChips = parseInt(document.getElementById('init-chips').value) || 1000;
+            
+            const d = new Date();
+            const sessionDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+            gameState.active = true; 
+            gameState.round = 1; 
+            gameState.players = pList; 
+            gameState.baseChips = {}; 
+            gameState.topUps = {}; 
+            gameState.extras = {}; 
+            gameState.sessionDate = sessionDate; 
+            
+            pList.forEach(p => gameState.baseChips[p] = initChips);
+            gameState.baseFund = 0; 
+            gameState.history = [];
+            
+            localStorage.setItem('mj_last_players', JSON.stringify(pList));
+            saveState(); 
+            renderGameView();
+        }
+
+        // 修改：使用 Modal 來處理結束確認，避免 confirm() 被阻擋
+        function exitGame() { 
+            document.getElementById('exit-modal').classList.remove('hidden');
+        }
+
+        function closeExitModal() {
+             document.getElementById('exit-modal').classList.add('hidden');
+        }
+
+        function confirmExit() {
+            localStorage.removeItem('mj_game_state'); 
+            closeExitModal();
+            // 重置遊戲狀態
+            gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {}, extras: {} };
+            // 重新初始化
+            init(); 
+        }
 
         init();
     </script>
 </body>
-
 </html>

@@ -1,0 +1,21 @@
+{
+  "name": "麻將餐",
+  "short_name": "麻將餐",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ff8787",
+  "theme_color": "#ff8787",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "cute.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    },
+    {
+      "src": "cute.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
