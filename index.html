@@ -517,13 +517,13 @@
             if (newName && newName.trim() !== "") {
                 if (allPlayers.includes(newName)) { alert("已存在"); return; }
                 allPlayers.push(newName);
-                localStorage.setItem('mj_all_players', JSON.stringify(allPlayers));
+                localStorage.setItem(KEY_ALL_PLAYERS, JSON.stringify(allPlayers));
                 renderLobbyPlayers();
             }
         }
         function renderLobbyPlayers() {
             const container = document.getElementById('lobby-players');
-            let lastPlayers = JSON.parse(localStorage.getItem('KEY_LAST_PLAYERS')) || DEFAULT_PLAYERS.slice(0, 4);
+            let lastPlayers = JSON.parse(localStorage.getItem(KEY_LAST_PLAYERS)) || DEFAULT_PLAYERS.slice(0, 4);
             container.innerHTML = Array(4).fill(0).map((_, i) => {
                 const currentPlayer = lastPlayers[i] || allPlayers[0];
                 const options = allPlayers.map(p => `<option value="${p}" ${p === currentPlayer ? 'selected' : ''}>${p}</option>`).join('');
@@ -534,9 +534,9 @@
             const displayEl = select.parentElement.querySelector('.player-name-display');
             displayEl.innerText = select.value;
             select.parentElement.querySelector('div').innerText = select.value.charAt(0);
-            let lastPlayers = JSON.parse(localStorage.getItem('KEY_LAST_PLAYERS')) || DEFAULT_PLAYERS.slice(0, 4);
+            let lastPlayers = JSON.parse(localStorage.getItem(KEY_LAST_PLAYERS)) || DEFAULT_PLAYERS.slice(0, 4);
             lastPlayers[index] = select.value;
-            localStorage.setItem('KEY_LAST_PLAYERS', JSON.stringify(lastPlayers));
+            localStorage.setItem(KEY_LAST_PLAYERS, JSON.stringify(lastPlayers));
         }
 
         // --- Core Helpers ---
@@ -600,7 +600,7 @@
                 }).reverse().join('');
             }
 
-        function saveState() { localStorage.setItem('mj_game_state', JSON.stringify(gameState)); }
+        function saveState() { localStorage.setItem(KEY_GAME_STATE, JSON.stringify(gameState)); }
         
         // --- Modals Logic (TopUp, Sub, Exit) ---
         function openTopUpModal() {
@@ -647,7 +647,7 @@
                 if(gameState.topUps[oldN]) { gameState.topUps[newN] = gameState.topUps[oldN]; delete gameState.topUps[oldN]; }
                 if(gameState.extras[oldN]) { gameState.extras[newN] = gameState.extras[oldN]; delete gameState.extras[oldN]; }
             }
-            localStorage.setItem('KEY_LAST_PLAYERS', JSON.stringify(gameState.players));
+            localStorage.setItem(KEY_LAST_PLAYERS, JSON.stringify(gameState.players));
             saveState(); renderGameView(); closeSubModal();
         }
 
@@ -672,7 +672,7 @@
             gameState.baseFund = 0; 
             gameState.history = [];
             
-            localStorage.setItem('KEY_LAST_PLAYERS', JSON.stringify(pList));
+            localStorage.setItem(KEY_LAST_PLAYERS, JSON.stringify(pList));
             saveState(); 
             renderGameView();
         }
@@ -687,7 +687,7 @@
         }
 
         function confirmExit() {
-            localStorage.removeItem('mj_game_state'); 
+            localStorage.removeItem(KEY_GAME_STATE); 
             closeExitModal();
             // 重置遊戲狀態
             gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {}, extras: {} };
