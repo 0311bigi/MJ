@@ -377,7 +377,20 @@
     <script>
         // ★ 你的測試版 URL
         const API_URL = 'https://script.google.com/macros/s/AKfycbyQUvM-ZS2pB4P6ccnfP2C9NnVTuPmHmEqu9nZ9uLv2UpEPF6DAJTKiNucduECm75M/exec'; 
-        
+
+        // --- 新增：預設玩家名單 (需與 index.html 保持一致) ---
+        const DEFAULT_PLAYERS = ['Miffy', 'Yuri', 'Penny', 'Bigi', 'Jocelyn', 'Jilye'];
+    
+        // --- 新增：計算 index.html 的存檔 Key ---
+        // 邏輯：取得目前路徑 (stats.html)，將檔名換成 index.html，然後產生一樣的前綴
+        // 這樣才能讀取到大廳儲存的玩家名單
+        const currentPath = window.location.pathname;
+        const folderPath = currentPath.substring(0, currentPath.lastIndexOf('/')); // 取得資料夾路徑
+        const indexPath = folderPath + '/index.html'; // 組合出 index.html 的完整路徑
+        const indexPrefix = indexPath.replace(/[^a-zA-Z0-9]/g, '_'); // 轉成 Key 前綴
+        const KEY_ALL_PLAYERS = `${indexPrefix}_mj_all_players`;
+        // ----------------------------------------------------
+          
         let rawData = [];
         let fundRecords = [];
         let msgRecords = [];
@@ -609,7 +622,25 @@
             renderLeaderboard(sortedPlayers);
             renderKings(players);
             renderAchievements(achievementMap);
-            renderPlayerOptions(Object.keys(players));
+            // --- 修改：合併「預設名單」+「存檔名單」+「戰績名單」 ---
+            
+            // 1. 嘗試讀取 localStorage (index.html 存的)
+            let localPlayers = [];
+            try {
+                const saved = localStorage.getItem(KEY_ALL_PLAYERS);
+                if (saved) localPlayers = JSON.parse(saved);
+            } catch(e) { console.error("讀取名單失敗", e); }
+        
+            // 2. 合併所有來源，並使用 Set 去除重複
+            const allNamesSet = new Set([
+                ...DEFAULT_PLAYERS,       // 預設
+                ...localPlayers,          // 大廳新增的
+                ...Object.keys(players)   // 戰績裡有出現過的
+            ]);
+        
+            // 3. 轉回 Array 並傳給選單渲染
+            renderPlayerOptions(Array.from(allNamesSet));
+            // ----------------------------------------------------
         }
     
         function renderPlayerOptions(names) {

@@ -213,25 +213,37 @@
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbyQUvM-ZS2pB4P6ccnfP2C9NnVTuPmHmEqu9nZ9uLv2UpEPF6DAJTKiNucduECm75M/exec';
+
+    // --- 新增：定義獨立的存檔 Key ---
+        // 取得當前網址路徑並移除非英數字元，確保不同資料夾的網頁有不同的存檔前綴
+        const PATH_PREFIX = window.location.pathname.replace(/[^a-zA-Z0-9]/g, '_');
         
+        // 定義存檔名稱 (加上前綴後，每個資料夾的存檔就會分開了)
+        const KEY_GAME_STATE = `${PATH_PREFIX}_mj_game_state`;
+        const KEY_ALL_PLAYERS = `${PATH_PREFIX}_mj_all_players`;
+        const KEY_LAST_PLAYERS = `${PATH_PREFIX}_mj_last_players`;
+        const KEY_BIG_TYPES = `${PATH_PREFIX}_mj_big_types`;
+        // -----------------------------
+    
         const DEFAULT_PLAYERS = ['Miffy', 'Yuri', 'Penny', 'Bigi', 'Jocelyn', 'Jilye'];
         let allPlayers = [...DEFAULT_PLAYERS]; 
         let configBigTypes = ["天胡","八仙過海","字一色","七搶一", "Migi", "大四喜", "小四喜", "清一色", "混一色", "大三元", "小三元", "碰碰胡", "五暗刻", "四暗刻"]; 
-
+    
         let gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {}, extras: {} };
         
         let editingPlayerName = null; 
         let currentBigHandPlayer = null; 
-
+    
         // --- Init ---
         async function init() {
-            const savedState = localStorage.getItem('mj_game_state');
-            const savedPlayers = localStorage.getItem('mj_all_players');
-            const savedBigTypes = localStorage.getItem('mj_big_types');
-
+            // 修改：使用變數 KEY_GAME_STATE 等等
+            const savedState = localStorage.getItem(KEY_GAME_STATE);
+            const savedPlayers = localStorage.getItem(KEY_ALL_PLAYERS);
+            const savedBigTypes = localStorage.getItem(KEY_BIG_TYPES);
+    
             if (savedPlayers) allPlayers = JSON.parse(savedPlayers);
             if (savedBigTypes) configBigTypes = JSON.parse(savedBigTypes);
-
+    
             if (savedState) {
                 gameState = JSON.parse(savedState);
                 if (!gameState.topUps) gameState.topUps = {};
@@ -241,7 +253,7 @@
                     const d = new Date();
                     gameState.sessionDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                 }
-
+    
                 if (gameState.active) { renderGameView(); }
             } else {
                 showLobby();
@@ -250,7 +262,7 @@
             startBannerCarousel();
             fetchConfig(); 
         }
-
+    
         async function fetchConfig() {
             try {
                 const res = await fetch(API_URL);
@@ -259,7 +271,8 @@
                 if (json.status === 'success') {
                     if (json.bigTypes && Array.isArray(json.bigTypes)) {
                         configBigTypes = json.bigTypes;
-                        localStorage.setItem('mj_big_types', JSON.stringify(configBigTypes));
+                        // 修改：使用變數
+                        localStorage.setItem(KEY_BIG_TYPES, JSON.stringify(configBigTypes));
                     }
                 }
             } catch(e) { console.log("Fetch config failed, using cache"); }
@@ -510,7 +523,7 @@
         }
         function renderLobbyPlayers() {
             const container = document.getElementById('lobby-players');
-            let lastPlayers = JSON.parse(localStorage.getItem('mj_last_players')) || DEFAULT_PLAYERS.slice(0, 4);
+            let lastPlayers = JSON.parse(localStorage.getItem('KEY_LAST_PLAYERS')) || DEFAULT_PLAYERS.slice(0, 4);
             container.innerHTML = Array(4).fill(0).map((_, i) => {
                 const currentPlayer = lastPlayers[i] || allPlayers[0];
                 const options = allPlayers.map(p => `<option value="${p}" ${p === currentPlayer ? 'selected' : ''}>${p}</option>`).join('');
@@ -521,9 +534,9 @@
             const displayEl = select.parentElement.querySelector('.player-name-display');
             displayEl.innerText = select.value;
             select.parentElement.querySelector('div').innerText = select.value.charAt(0);
-            let lastPlayers = JSON.parse(localStorage.getItem('mj_last_players')) || DEFAULT_PLAYERS.slice(0, 4);
+            let lastPlayers = JSON.parse(localStorage.getItem('KEY_LAST_PLAYERS')) || DEFAULT_PLAYERS.slice(0, 4);
             lastPlayers[index] = select.value;
-            localStorage.setItem('mj_last_players', JSON.stringify(lastPlayers));
+            localStorage.setItem('KEY_LAST_PLAYERS', JSON.stringify(lastPlayers));
         }
 
         // --- Core Helpers ---
@@ -634,7 +647,7 @@
                 if(gameState.topUps[oldN]) { gameState.topUps[newN] = gameState.topUps[oldN]; delete gameState.topUps[oldN]; }
                 if(gameState.extras[oldN]) { gameState.extras[newN] = gameState.extras[oldN]; delete gameState.extras[oldN]; }
             }
-            localStorage.setItem('mj_last_players', JSON.stringify(gameState.players));
+            localStorage.setItem('KEY_LAST_PLAYERS', JSON.stringify(gameState.players));
             saveState(); renderGameView(); closeSubModal();
         }
 
@@ -659,7 +672,7 @@
             gameState.baseFund = 0; 
             gameState.history = [];
             
-            localStorage.setItem('mj_last_players', JSON.stringify(pList));
+            localStorage.setItem('KEY_LAST_PLAYERS', JSON.stringify(pList));
             saveState(); 
             renderGameView();
         }
