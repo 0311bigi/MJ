@@ -94,11 +94,25 @@
         </div>
         <div class="relative z-10 px-4 -mt-20 pb-8">
             <div class="card p-6 space-y-5 shadow-2xl border-t-8 border-cute-yellow">
+                
+                <!-- 新增：模式選擇按鈕 -->
+                <div class="flex bg-cute-cream rounded-xl p-1 border border-cute-red/20 shadow-inner mb-4">
+                    <button id="btn-mode-4" onclick="setMode(4)" class="flex-1 py-2 rounded-lg font-black transition text-sm bg-cute-red text-white shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-group"></i> 4人麻將
+                    </button>
+                    <button id="btn-mode-5" onclick="setMode(5)" class="flex-1 py-2 rounded-lg font-black transition text-sm text-cute-red/60 hover:bg-white/50 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-users"></i> 5人麻將
+                    </button>
+                </div>
+
                 <div class="flex justify-between items-end">
                     <h3 class="font-black text-cute-dark text-xl"><i class="fa-solid fa-users text-cute-red"></i> 誰要發財？</h3>
                     <div class="text-sm font-bold text-cute-red/60 bg-cute-cream px-4 py-2 rounded-xl border border-cute-red/20">底: <input type="number" id="init-chips" value="1000" class="w-12 text-center bg-transparent outline-none text-cute-red font-black text-lg"></div>
                 </div>
-                <div class="grid grid-cols-4 gap-3" id="lobby-players"></div>
+                
+                <!-- 修改：移除原本的 grid class，改由 JS 動態控制 -->
+                <div id="lobby-players"></div>
+                
                 <button onclick="addNewPlayer()" class="w-full py-4 rounded-xl border-2 border-dashed border-cute-red/40 text-cute-red font-black bg-cute-cream/30 hover:bg-cute-cream hover:border-cute-red transition flex items-center justify-center gap-2 group active:scale-95 text-base">
                     <span class="w-7 h-7 rounded-full bg-cute-red text-white flex items-center justify-center shadow-md group-hover:rotate-90 transition-transform text-sm"><i class="fa-solid fa-plus"></i></span><span>新增夥伴</span>
                 </button>
@@ -214,11 +228,9 @@
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbyQUvM-ZS2pB4P6ccnfP2C9NnVTuPmHmEqu9nZ9uLv2UpEPF6DAJTKiNucduECm75M/exec';
 
-    // --- 新增：定義獨立的存檔 Key ---
-        // 取得當前網址路徑並移除非英數字元，確保不同資料夾的網頁有不同的存檔前綴
+        // --- 定義獨立的存檔 Key (根據網址路徑自動區分) ---
         const PATH_PREFIX = window.location.pathname.replace(/[^a-zA-Z0-9]/g, '_');
         
-        // 定義存檔名稱 (加上前綴後，每個資料夾的存檔就會分開了)
         const KEY_GAME_STATE = `${PATH_PREFIX}_mj_game_state`;
         const KEY_ALL_PLAYERS = `${PATH_PREFIX}_mj_all_players`;
         const KEY_LAST_PLAYERS = `${PATH_PREFIX}_mj_last_players`;
@@ -230,13 +242,13 @@
         let configBigTypes = ["天胡","八仙過海","字一色","七搶一", "Migi", "大四喜", "小四喜", "清一色", "混一色", "大三元", "小三元", "碰碰胡", "五暗刻", "四暗刻"]; 
     
         let gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {}, extras: {} };
+        let selectedPlayerCount = 4; // 新增：預設 4 人
         
         let editingPlayerName = null; 
         let currentBigHandPlayer = null; 
     
         // --- Init ---
         async function init() {
-            // 修改：使用變數 KEY_GAME_STATE 等等
             const savedState = localStorage.getItem(KEY_GAME_STATE);
             const savedPlayers = localStorage.getItem(KEY_ALL_PLAYERS);
             const savedBigTypes = localStorage.getItem(KEY_BIG_TYPES);
@@ -255,6 +267,7 @@
                 }
     
                 if (gameState.active) { renderGameView(); }
+                else { showLobby(); } // 確保初始化時顯示大廳
             } else {
                 showLobby();
             }
@@ -271,20 +284,38 @@
                 if (json.status === 'success') {
                     if (json.bigTypes && Array.isArray(json.bigTypes)) {
                         configBigTypes = json.bigTypes;
-                        // 修改：使用變數
                         localStorage.setItem(KEY_BIG_TYPES, JSON.stringify(configBigTypes));
                     }
                 }
             } catch(e) { console.log("Fetch config failed, using cache"); }
         }
 
+        // --- Mode Switching (4/5人 切換) ---
+        function setMode(n) {
+            selectedPlayerCount = n;
+            
+            // UI 按鈕樣式更新
+            const btn4 = document.getElementById('btn-mode-4');
+            const btn5 = document.getElementById('btn-mode-5');
+            
+            if (n === 4) {
+                btn4.className = "flex-1 py-2 rounded-lg font-black transition text-sm bg-cute-red text-white shadow-sm flex items-center justify-center gap-2";
+                btn5.className = "flex-1 py-2 rounded-lg font-black transition text-sm text-cute-red/60 hover:bg-white/50 flex items-center justify-center gap-2";
+            } else {
+                btn4.className = "flex-1 py-2 rounded-lg font-black transition text-sm text-cute-red/60 hover:bg-white/50 flex items-center justify-center gap-2";
+                btn5.className = "flex-1 py-2 rounded-lg font-black transition text-sm bg-cute-red text-white shadow-sm flex items-center justify-center gap-2";
+            }
+            
+            renderLobbyPlayers(); // 切換後重繪格子
+        }
+    
         // --- Game Logic ---
         function ensureExtras(player) {
             if (!gameState.extras[player]) {
                 gameState.extras[player] = { penalty: 0, foul: 0, continuance: 0, bigHands: [] };
             }
         }
-
+    
         function cyclePenalty(player) {
             ensureExtras(player);
             let val = gameState.extras[player].penalty;
@@ -292,7 +323,7 @@
             gameState.extras[player].penalty = val;
             saveState(); renderGameView();
         }
-
+    
         function cycleFoul(player) {
             ensureExtras(player);
             let val = gameState.extras[player].foul;
@@ -300,7 +331,7 @@
             gameState.extras[player].foul = val;
             saveState(); renderGameView();
         }
-
+    
         function updateContinuance(player, input) {
             ensureExtras(player);
             let val = parseInt(input.value);
@@ -308,7 +339,7 @@
             gameState.extras[player].continuance = val;
             saveState();
         }
-
+    
         function openBigHandModal(player) {
             currentBigHandPlayer = player;
             ensureExtras(player);
@@ -334,7 +365,7 @@
             }
             document.getElementById('big-hand-modal').classList.remove('hidden');
         }
-
+    
         function toggleBigHand(checkbox) {
             if(!currentBigHandPlayer) return;
             const val = checkbox.value;
@@ -348,24 +379,23 @@
             saveState();
             renderGameView(); 
         }
-
+    
         function closeBigHandModal() {
             document.getElementById('big-hand-modal').classList.add('hidden');
             currentBigHandPlayer = null;
         }
-
+    
         function renderGameView() {
             document.getElementById('view-lobby').classList.add('hidden');
             document.getElementById('view-game').classList.remove('hidden');
             document.getElementById('game-round-display').innerText = gameState.round;
             renderHistory();
-
+    
             const container = document.getElementById('current-rows');
             container.innerHTML = gameState.players.map(p => {
                 const lastVal = gameState.baseChips[p];
                 const topUpVal = gameState.topUps[p] || 0;
                 const effectiveBase = lastVal + topUpVal;
-                // 如果 topUpVal 是 0 (還清了)，就不顯示標籤
                 const topUpBadge = topUpVal !== 0 
                     ? `<span class="ml-1 text-xs ${topUpVal > 0 ? 'text-green-600 bg-green-100' : 'text-blue-600 bg-blue-100'} px-1.5 py-0.5 rounded font-bold">💰${topUpVal > 0 ? '+' : ''}${topUpVal}</span>` 
                     : '';
@@ -381,7 +411,7 @@
                         ${ex.bigHands.map(h => `<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-md font-bold shadow-sm">🀄 ${h}</span>`).join('')}
                        </div>` 
                     : '';
-
+    
                 return `
                 <div class="bg-white rounded-2xl p-4 border-2 border-gray-100 shadow-sm transition hover:border-gray-200">
                     <div class="flex items-center justify-between mb-4">
@@ -405,7 +435,7 @@
                                 value="${effectiveBase}" placeholder="${effectiveBase}" oninput="calculate()" onfocus="this.select()">
                         </div>
                     </div>
-
+    
                     <div class="grid grid-cols-4 gap-2">
                         <div class="relative">
                             <span class="absolute left-2 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400 pointer-events-none">連</span>
@@ -428,7 +458,7 @@
             document.getElementById('current-fund').value = gameState.baseFund;
             calculate();
         }
-
+    
         async function submitRound() {
             const btn = document.getElementById('submit-btn');
             const originalText = btn.innerHTML;
@@ -436,7 +466,7 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
             document.getElementById('loading-overlay').classList.remove('hidden');
             document.getElementById('loading-text').innerText = "正在上傳戰績...";
-
+    
             const rows = document.querySelectorAll('.chip-input');
             const payload = [];
             const nextBaseChips = {}; 
@@ -462,10 +492,10 @@
                     bigNames: e.bigHands.join(',') 
                 });
             });
-
+    
             const currentFund = parseInt(document.getElementById('current-fund').value) || 0;
             const fundDiff = currentFund - gameState.baseFund;
-
+    
             try {
                 const dateStr = gameState.sessionDate || new Date().toISOString().split('T')[0];
                 
@@ -473,7 +503,7 @@
                     method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({ date: dateStr, round: gameState.round, fund: fundDiff, data: payload })
                 });
-
+    
                 gameState.history.push({ round: gameState.round, scores: payload, fund: fundDiff });
                 gameState.round += 1;
                 gameState.baseChips = nextBaseChips;
@@ -492,7 +522,7 @@
                 document.getElementById('loading-overlay').classList.add('hidden');
             }
         }
-
+    
         // --- Banner & Views ---
         function startBannerCarousel() {
             const slides = document.querySelectorAll('.banner-slide');
@@ -504,13 +534,13 @@
                 slides[currentIndex].classList.replace('opacity-0', 'opacity-100');
             }, 3000);
         }
-
+    
         function showLobby() {
             document.getElementById('view-lobby').classList.remove('hidden');
             document.getElementById('view-game').classList.add('hidden');
-            renderLobbyPlayers();
+            setMode(selectedPlayerCount); // 初始化按鈕狀態與排版
         }
-
+    
         // --- Lobby Funcs ---
         function addNewPlayer() {
             const newName = prompt("請輸入新玩家的名字：");
@@ -521,24 +551,56 @@
                 renderLobbyPlayers();
             }
         }
+        
+        // 修改：支援 4/5 人排版切換與自動補位
         function renderLobbyPlayers() {
             const container = document.getElementById('lobby-players');
-            let lastPlayers = JSON.parse(localStorage.getItem(KEY_LAST_PLAYERS)) || DEFAULT_PLAYERS.slice(0, 4);
-            container.innerHTML = Array(4).fill(0).map((_, i) => {
+            let lastPlayers = JSON.parse(localStorage.getItem(KEY_LAST_PLAYERS)) || DEFAULT_PLAYERS.slice(0, 5);
+            
+            // 1. 根據人數切換 CSS 排版
+            if (selectedPlayerCount === 5) {
+                container.className = "flex flex-wrap justify-center gap-3"; 
+            } else {
+                container.className = "grid grid-cols-4 gap-3"; 
+            }
+
+            // 2. 自動補滿人數 (防呆)
+            while (lastPlayers.length < selectedPlayerCount) {
+                const used = new Set(lastPlayers);
+                const next = allPlayers.find(p => !used.has(p)) || allPlayers[0];
+                lastPlayers.push(next);
+            }
+
+            const count = selectedPlayerCount;
+            container.innerHTML = Array(count).fill(0).map((_, i) => {
                 const currentPlayer = lastPlayers[i] || allPlayers[0];
                 const options = allPlayers.map(p => `<option value="${p}" ${p === currentPlayer ? 'selected' : ''}>${p}</option>`).join('');
-                return `<div class="relative group"><div class="w-full aspect-square bg-cute-cream rounded-2xl border-2 border-cute-red/20 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-cute-red transition shadow-sm active:scale-95"><div class="w-12 h-12 rounded-full bg-cute-red text-white flex items-center justify-center text-xl font-black mb-1 shadow-md border-2 border-white">${currentPlayer.charAt(0)}</div><select onchange="updateLobbyPlayer(this, ${i})" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full text-center">${options}</select><span class="text-sm font-bold text-cute-dark pointer-events-none player-name-display">${currentPlayer}</span><i class="fa-solid fa-caret-down text-[10px] text-cute-red/30 absolute bottom-1"></i></div></div>`;
+                
+                // 5人時寬度設為 30% (3上2下)，4人時自動填滿
+                const widthClass = selectedPlayerCount === 5 ? 'w-[30%]' : 'w-full';
+                
+                return `<div class="relative group ${widthClass}"><div class="w-full aspect-square bg-cute-cream rounded-2xl border-2 border-cute-red/20 flex flex-col items-center justify-center relative overflow-hidden group-hover:border-cute-red transition shadow-sm active:scale-95"><div class="w-12 h-12 rounded-full bg-cute-red text-white flex items-center justify-center text-xl font-black mb-1 shadow-md border-2 border-white">${currentPlayer.charAt(0)}</div><select onchange="updateLobbyPlayer(this, ${i})" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full text-center">${options}</select><span class="text-sm font-bold text-cute-dark pointer-events-none player-name-display">${currentPlayer}</span><i class="fa-solid fa-caret-down text-[10px] text-cute-red/30 absolute bottom-1"></i></div></div>`;
             }).join('');
         }
+        
         function updateLobbyPlayer(select, index) {
             const displayEl = select.parentElement.querySelector('.player-name-display');
             displayEl.innerText = select.value;
             select.parentElement.querySelector('div').innerText = select.value.charAt(0);
-            let lastPlayers = JSON.parse(localStorage.getItem(KEY_LAST_PLAYERS)) || DEFAULT_PLAYERS.slice(0, 4);
+            
+            let lastPlayers = JSON.parse(localStorage.getItem(KEY_LAST_PLAYERS)) || DEFAULT_PLAYERS.slice(0, 5);
+            
+            // 確保陣列夠長
+            while (lastPlayers.length < selectedPlayerCount) {
+                const used = new Set(lastPlayers);
+                const next = allPlayers.find(p => !used.has(p)) || allPlayers[0];
+                lastPlayers.push(next);
+            }
+            
             lastPlayers[index] = select.value;
             localStorage.setItem(KEY_LAST_PLAYERS, JSON.stringify(lastPlayers));
         }
-
+    
         // --- Core Helpers ---
     function calculate() {
                 const inputs = document.querySelectorAll('.chip-input');
@@ -599,7 +661,7 @@
                     return `<details class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group"><summary class="flex justify-between items-center p-3 hover:bg-gray-50 transition select-none"><div class="font-bold text-gray-700 text-base"><span class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-sm mr-2">第 ${h.round} 醬</span><span class="text-cute-red">${winnerText}</span></div><i class="fa-solid fa-chevron-down text-gray-300 group-open:rotate-180 transition-transform text-lg"></i></summary><div class="p-4 bg-cute-cream/50 border-t border-gray-100 text-base grid grid-cols-2 gap-2">${h.scores.map(s => `<div class="flex justify-between"><span class="text-gray-600">${s.name}</span><span class="font-bold ${s.score >= 0 ? 'text-cute-red' : 'text-green-600'}">${s.score > 0 ? '+' : ''}${s.score}</span></div>`).join('')}<div class="flex justify-between border-t border-gray-200 pt-2 mt-1 col-span-2"><span class="text-gray-500">公基金變動</span><span class="font-bold text-cute-yellow">${h.fund > 0 ? '+' : ''}${h.fund}</span></div></div></details>`;
                 }).reverse().join('');
             }
-
+    
         function saveState() { localStorage.setItem(KEY_GAME_STATE, JSON.stringify(gameState)); }
         
         // --- Modals Logic (TopUp, Sub, Exit) ---
@@ -610,7 +672,6 @@
         }
         function closeTopUpModal() { document.getElementById('topup-modal').classList.add('hidden'); }
         
-        // 修改：confirmTopUp 支援增資(1) 與 還款(-1)
         function confirmTopUp(multiplier) {
             const p = document.getElementById('topup-player').value;
             const amt = parseInt(document.getElementById('topup-amount').value) || 0;
@@ -650,16 +711,17 @@
             localStorage.setItem(KEY_LAST_PLAYERS, JSON.stringify(gameState.players));
             saveState(); renderGameView(); closeSubModal();
         }
-
+    
         function startGame() {
             const selects = document.querySelectorAll('#lobby-players select');
             const pList = Array.from(selects).map(s => s.value);
-            if (new Set(pList).size !== 4) { alert("玩家不能重複喔！"); return; }
+            // 修改：檢查 N 人不重複
+            if (new Set(pList).size !== selectedPlayerCount) { alert("玩家不能重複喔！"); return; }
             const initChips = parseInt(document.getElementById('init-chips').value) || 1000;
             
             const d = new Date();
             const sessionDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-
+    
             gameState.active = true; 
             gameState.round = 1; 
             gameState.players = pList; 
@@ -676,25 +738,22 @@
             saveState(); 
             renderGameView();
         }
-
-        // 修改：使用 Modal 來處理結束確認，避免 confirm() 被阻擋
+    
         function exitGame() { 
             document.getElementById('exit-modal').classList.remove('hidden');
         }
-
+    
         function closeExitModal() {
              document.getElementById('exit-modal').classList.add('hidden');
         }
-
+    
         function confirmExit() {
             localStorage.removeItem(KEY_GAME_STATE); 
             closeExitModal();
-            // 重置遊戲狀態
             gameState = { active: false, round: 1, baseChips: {}, baseFund: 0, history: [], topUps: {}, extras: {} };
-            // 重新初始化
             init(); 
         }
-
+    
         init();
     </script>
 </body>
